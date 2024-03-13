@@ -65,7 +65,10 @@ defmodule Satellite do
   end
 
   @impl true
-  def handle_info({:EXIT, producer_pid, reason}, %{producer_pid: producer_pid, producer: producer} = state) do
+  def handle_info(
+        {:EXIT, producer_pid, reason},
+        %{producer_pid: producer_pid, producer: producer} = state
+      ) do
     Logger.info("#{__MODULE__} is exiting with reason #{inspect(reason)}")
     {:noreply, producer.establish_connection(state)}
   end

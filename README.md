@@ -29,3 +29,30 @@ def deps do
   ]
 end
 ```
+
+## Add configs
+
+```elixir
+config :satellite,
+  producer: Satellite.RedisProducer,
+  producer_opts: %{host: "127.0.0.1", port: 6379}
+```
+more configs will be added soon..
+
+## Add Satellite to your application
+
+```elixir
+
+  @impl true
+  def start(_type, _args) do
+    children = [
+      # Starts Satellite
+      {Satellite, []}
+    ]
+
+    # See https://hexdocs.pm/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: Antenna.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+```
