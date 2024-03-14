@@ -34,6 +34,8 @@ end
 
 ```elixir
 config :satellite,
+  enabled: true,
+  origin: "my_app",
   producer: Satellite.RedisProducer,
   producer_opts: %{host: "127.0.0.1", port: 6379}
 ```
@@ -51,7 +53,8 @@ more configs will be added soon..
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
+    # for other strategies and supporte
+    d options
     opts = [strategy: :one_for_one, name: Antenna.Supervisor]
     Supervisor.start_link(children, opts)
   end

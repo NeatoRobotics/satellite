@@ -34,10 +34,12 @@ defmodule Satellite.RedisProducer do
       payload: payload
     )
 
+    message = Satellite.Message.new(entity_type, entity_id, event_type, payload)
+
     case Redix.command(redis_pid, [
            "PUBLISH",
            "#{entity_type}:#{entity_id}:#{event_type}",
-           Jason.encode!(payload)
+           Jason.encode!(message)
          ]) do
       {:ok, _} ->
         :ok
@@ -65,7 +67,9 @@ defmodule Satellite.RedisProducer do
       payload: payload
     )
 
-    case Redix.command(redis_pid, ["PUBLISH", "global:#{event_type}", Jason.encode!(payload)]) do
+    message = Satellite.Message.new(event_type, payload)
+
+    case Redix.command(redis_pid, ["PUBLISH", "global:#{event_type}", Jason.encode!(message)]) do
       {:ok, _} ->
         :ok
 

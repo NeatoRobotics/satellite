@@ -14,6 +14,8 @@ defmodule Satellite do
     Process.flag(:trap_exit, true)
     producer = Application.fetch_env!(:satellite, :producer)
     producer_opts = Application.fetch_env!(:satellite, :producer_opts)
+    _enabled = Application.fetch_env!(:satellite, :enabled)
+    _origin = Application.fetch_env!(:satellite, :origin)
 
     if producer not in @allowed_producer_list,
       do:
@@ -81,7 +83,11 @@ defmodule Satellite do
 
   @spec send(String.t(), String.t(), String.t(), map()) :: :ok | {:error, term()}
   def send(entity_type, entity_id, event_type, payload) do
-    GenServer.call(__MODULE__, {:send, entity_type, entity_id, event_type, payload})
+    if enabled?() do
+      GenServer.call(__MODULE__, {:send, entity_type, entity_id, event_type, payload})
+    else
+      :ok
+    end
   end
 
   @spec send(String.t(), map()) :: :ok | {:error, term()}
@@ -94,5 +100,9 @@ defmodule Satellite do
 
     timer && Process.cancel_timer(timer)
     Process.send_after(self(), :establish_conn, @reconnect_after_ms)
+  end
+
+  defp enabled? do
+    Application.fetch_env!(:satellite, :enabled)
   end
 end
