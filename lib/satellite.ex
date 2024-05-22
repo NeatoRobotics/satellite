@@ -3,7 +3,7 @@ defmodule Satellite do
 
   require Logger
 
-  @allowed_producer_list [Satellite.RedisProducer]
+  @allowed_producer_list [Satellite.RedisProducer, Satellite.SQSProducer]
   @reconnect_after_ms 5_000
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -12,8 +12,7 @@ defmodule Satellite do
   def init(opts) do
     Logger.debug("starting #{__MODULE__}")
     Process.flag(:trap_exit, true)
-    producer = Application.fetch_env!(:satellite, :producer)
-    producer_opts = Application.fetch_env!(:satellite, :producer_opts)
+    {producer, producer_opts} = Application.fetch_env!(:satellite, :producer)
     _enabled = Application.fetch_env!(:satellite, :enabled)
     _origin = Application.fetch_env!(:satellite, :origin)
 

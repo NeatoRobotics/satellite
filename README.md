@@ -11,7 +11,7 @@
 ### The following producers are supported
 
 - [x] Redis 
-- [ ] Amazon SQS
+- [x] Amazon SQS
 - [ ] RabbitMQ
 
 more details will be added soon...
@@ -36,8 +36,7 @@ end
 config :satellite,
   enabled: true,
   origin: "my_app",
-  producer: Satellite.RedisProducer,
-  producer_opts: %{host: "127.0.0.1", port: 6379}
+  producer: {Satellite.RedisProducer, %{host: "127.0.0.1", port: 6379}}
 ```
 more configs will be added soon..
 

@@ -22,7 +22,11 @@ defmodule Satellite.MixProject do
   defp deps do
     [
       {:redix, "~> 1.3"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:ex_aws, "~> 2.1"},
+      {:ex_aws_sqs, "~> 3.3"},
+      {:hackney, "~> 1.9"},
+      {:sweet_xml, "~> 0.6"}
     ]
   end
 end
