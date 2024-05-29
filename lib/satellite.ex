@@ -1,107 +1,79 @@
 defmodule Satellite do
-  use GenServer
+  use Broadway
 
   require Logger
 
+  alias Broadway.Message
+
   @allowed_producer_list [Satellite.RedisProducer, Satellite.SQSProducer]
-  @reconnect_after_ms 5_000
 
-  def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
-
-  @impl true
-  def init(opts) do
-    Logger.debug("starting #{__MODULE__}")
-    Process.flag(:trap_exit, true)
-    {producer, producer_opts} = Application.fetch_env!(:satellite, :producer)
+  def start_link(_config) do
+    {producer, _producer_opts} = Application.fetch_env!(:satellite, :producer)
     _enabled = Application.fetch_env!(:satellite, :enabled)
     _origin = Application.fetch_env!(:satellite, :origin)
 
     if producer not in @allowed_producer_list,
       do:
-        raise(
-          ArgumentError,
-          "invalid options :producer given to #{inspect(__MODULE__)}.start_link/1 #{inspect(opts)}"
-        )
+        raise(ArgumentError, """
+        invalid producer given.
+        Only the following producers are supported: #{Enum.map(@allowed_producer_list, &(" " <> inspect(&1)))}
+        """)
 
-    state = %{producer: producer, producer_opts: nil, reconnect_timer: nil}
+    Broadway.start_link(__MODULE__,
+      name: __MODULE__,
+      producer: [
+        module: consumer_with_opts()
+      ],
+      processors: [
+        default: [concurrency: 1]
+      ],
+      batchers: [
+        s3: [concurrency: 2, batch_size: 1, batch_timeout: 1000]
+      ]
+    )
+  end
 
-    case producer.init(producer_opts) do
-      {:error, message} ->
-        Logger.error("invalid options given to #{inspect(producer)}.init/1")
-        raise ArgumentError, "invalid options given to #{inspect(producer)}.init/1, " <> message
+  def handle_message(_processor_name, message, _context) do
+    Logger.info("#{__MODULE__} handling message #{inspect(message)}")
 
-      {:ok, opts} ->
-        {:ok, %{state | producer_opts: opts}}
+    message
+    |> Message.update_data(&process_data/1)
+    |> Message.put_batcher(:s3)
+  end
 
-      {:reconnect, opts} ->
-        schedule_reconnect(%{state | producer_opts: opts})
+  def process_data(event) do
+    Enum.reduce_while(processors(), event, fn module, event ->
+      case apply(module, :process, [event]) do
+        {:ok, event} -> {:cont, event}
+        {:error, error} -> {:halt, {:error, error}}
+      end
+    end)
+    |> case do
+      {:error, error} ->
+        Logger.error(error)
+
+      event ->
+        event
     end
   end
 
-  @impl true
-  def handle_call(
-        {:send, entity_type, entity_id, event_type, payload},
-        _from,
-        %{producer: producer, producer_opts: producer_opts} = state
-      ) do
-    response = producer.send(entity_type, entity_id, event_type, payload, producer_opts)
+  def handle_batch(:s3, [message] = msgs, _, _) do
+    {producer, producer_opts} = producer_with_opts()
 
-    {:reply, response, state}
+    producer.send("error", message.data, producer_opts)
+
+    msgs
   end
 
-  @impl true
-  def handle_call(
-        {:send, event_type, payload},
-        _from,
-        %{producer: producer, producer_opts: producer_opts} = state
-      ) do
-    response = producer.send(event_type, payload, producer_opts)
-
-    {:reply, response, state}
+  defp consumer_with_opts do
+    Application.fetch_env!(:satellite, :consumer)
   end
 
-  @impl true
-  def handle_info(:establish_conn, %{producer: producer} = state) do
-    {:noreply, producer.establish_connection(state)}
+  defp producer_with_opts do
+    Application.fetch_env!(:satellite, :producer)
   end
 
-  @impl true
-  def handle_info(
-        {:EXIT, producer_pid, reason},
-        %{producer_pid: producer_pid, producer: producer} = state
-      ) do
-    Logger.info("#{__MODULE__} is exiting with reason #{inspect(reason)}")
-    {:noreply, producer.establish_connection(state)}
-  end
-
-  @impl true
-  def terminate(reason, state) do
-    Logger.info("#{__MODULE__} is terminating with reason #{inspect(reason)}")
-    state
-  end
-
-  @spec send(String.t(), String.t(), String.t(), map()) :: :ok | {:error, term()}
-  def send(entity_type, entity_id, event_type, payload) do
-    if enabled?() do
-      GenServer.call(__MODULE__, {:send, entity_type, entity_id, event_type, payload})
-    else
-      :ok
-    end
-  end
-
-  @spec send(String.t(), map()) :: :ok | {:error, term()}
-  def send(event_type, payload) do
-    GenServer.call(__MODULE__, {:send, event_type, payload})
-  end
-
-  defp schedule_reconnect(%{reconnect_timer: timer}) do
-    Logger.info("Attempting to reconnect in #{@reconnect_after_ms}...")
-
-    timer && Process.cancel_timer(timer)
-    Process.send_after(self(), :establish_conn, @reconnect_after_ms)
-  end
-
-  defp enabled? do
-    Application.fetch_env!(:satellite, :enabled)
+  defp processors do
+    Application.fetch_env!(:satellite, :processors)
   end
 end

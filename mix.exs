@@ -26,7 +26,9 @@ defmodule Satellite.MixProject do
       {:ex_aws, "~> 2.1"},
       {:ex_aws_sqs, "~> 3.3"},
       {:hackney, "~> 1.9"},
-      {:sweet_xml, "~> 0.6"}
+      {:sweet_xml, "~> 0.6"},
+      {:broadway, "~> 1.0"},
+      {:broadway_sqs, "~> 0.7.1"}
     ]
   end
 end

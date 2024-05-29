@@ -5,7 +5,6 @@ defmodule Satellite.Producer do
   This module defines callbacks to normalize options and send event to any message queue system.
   """
 
-  @callback establish_connection(opts :: map()) :: {:ok, map()} | {:reconnect, map()}
   @callback send(
               entity_type :: String.t(),
               entity_id :: String.t(),
