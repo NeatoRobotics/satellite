@@ -4,7 +4,7 @@
 
 ### The following consumers are supported
 
-- [ ] Redis Pubsub
+- [x] Redis Pubsub
 - [ ] Amazon SQS
 - [ ] RabbitMQ
 
@@ -36,9 +36,16 @@ end
 config :satellite,
   enabled: true,
   origin: "my_app",
-  producer: {Satellite.RedisProducer, %{host: "127.0.0.1", port: 6379}}
+  producer: {Satellite.RedisProducer, %{host: "127.0.0.1", port: 6379}},
+  consumer: 
+    {Satellite.RedisConsumer,
+      connection: [
+        host: "127.0.0.1",
+        port: 6379
+      ],
+      channels: ["robot:*" ,"user:*"]
+    }
 ```
-more configs will be added soon..
 
 ## Add Satellite to your application
 
