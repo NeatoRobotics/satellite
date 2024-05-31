@@ -14,7 +14,6 @@ defmodule Satellite.RedisProducer do
     end
   end
 
-  @impl true
   def establish_connection(opts) do
     case Redix.start_link(host: opts.host, port: opts.port) do
       {:ok, producer_pid} ->
@@ -28,7 +27,15 @@ defmodule Satellite.RedisProducer do
   end
 
   @impl true
-  def send(entity_type, entity_id, event_type, payload, %{producer_pid: redis_pid} = _opts) do
+  def send(
+        %{
+          "entity_type" => entity_type,
+          "entity_id" => entity_id,
+          "event_type" => event_type,
+          "payload" => payload
+        },
+        %{producer_pid: redis_pid} = _opts
+      ) do
     Logger.info(
       "sending event to channel #{entity_type}:#{entity_id}:#{event_type}",
       payload: payload
@@ -61,7 +68,10 @@ defmodule Satellite.RedisProducer do
   end
 
   @impl true
-  def send(event_type, payload, %{producer_pid: redis_pid} = _opts) do
+  def send(
+        %{"event_type" => event_type, "payload" => payload},
+        %{producer_pid: redis_pid} = _opts
+      ) do
     Logger.info(
       "sending event to channel global:#{event_type}",
       payload: payload
@@ -87,6 +97,13 @@ defmodule Satellite.RedisProducer do
 
         {:error, reason}
     end
+  end
+
+  def send(event, _opts) do
+    raise """
+      #{__MODULE__} is unable to handle the event #{inspect(event)}
+      The event is missing some required fields
+    """
   end
 
   defp validate(opts, key, default \\ nil) when is_map(opts) do

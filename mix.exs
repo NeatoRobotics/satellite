@@ -28,7 +28,8 @@ defmodule Satellite.MixProject do
       {:hackney, "~> 1.9"},
       {:sweet_xml, "~> 0.6"},
       {:broadway, "~> 1.0"},
-      {:broadway_sqs, "~> 0.7.1"}
+      {:broadway_sqs, "~> 0.7.1"},
+      {:elixir_uuid, "~> 1.2"}
     ]
   end
 end
