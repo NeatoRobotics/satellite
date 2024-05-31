@@ -12,6 +12,7 @@
 
 - [x] Redis 
 - [x] Amazon SQS
+- [ ] Kinesis
 - [ ] RabbitMQ
 
 more details will be added soon...
@@ -44,7 +45,14 @@ config :satellite,
         port: 6379
       ],
       channels: ["robot:*" ,"user:*"]
-    }
+    },
+  batchers: [
+    concurrency: 2,
+    batch_size: 10,
+    batch_timeout: 5000
+  ],
+  processors_concurrency: 1,
+  services: []
 ```
 
 ## Add Satellite to your application
