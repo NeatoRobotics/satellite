@@ -24,12 +24,12 @@ defmodule Satellite.SQSProducer do
     |> ExAws.SQS.send_message_batch(sqs_messages)
     |> ExAws.request(sqs_config)
     |> case do
-         {:ok, response} ->
-           Logger.info("batch of messages were successfully sent to sqs", response: response)
+      {:ok, response} ->
+        Logger.info("batch of messages were successfully sent to sqs", response: response)
 
-         {:error, error} ->
-           Logger.error("failed sending batch of messages to sqs", reason: error)
-       end
+      {:error, error} ->
+        Logger.error("failed sending batch of messages to sqs", reason: error)
+    end
   end
 
   def send(
@@ -59,12 +59,12 @@ defmodule Satellite.SQSProducer do
     |> ExAws.SQS.send_message(Jason.encode!(message), message_group_id: message_group_id)
     |> ExAws.request(sqs_config)
     |> case do
-         {:ok, response} ->
-           Logger.info("Successfully sent a message to sqs", response: response)
+      {:ok, response} ->
+        Logger.info("Successfully sent a message to sqs", response: response)
 
-         {:error, error} ->
-           Logger.error("Failed to send  a message to sqs", reason: error)
-       end
+      {:error, error} ->
+        Logger.error("Failed to send  a message to sqs", reason: error)
+    end
   end
 
   @impl true
@@ -84,12 +84,12 @@ defmodule Satellite.SQSProducer do
     |> ExAws.SQS.send_message(Jason.encode!(message), message_group_id: message_group_id)
     |> ExAws.request(sqs_config)
     |> case do
-         {:ok, response} ->
-           Logger.info("Successfully sent a message to sqs", response: response)
+      {:ok, response} ->
+        Logger.info("Successfully sent a message to sqs", response: response)
 
-         {:error, error} ->
-           Logger.error("Failed to send  a message to sqs", reason: error)
-       end
+      {:error, error} ->
+        Logger.error("Failed to send  a message to sqs", reason: error)
+    end
   end
 
   def send(event, _opts) do

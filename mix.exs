@@ -25,11 +25,16 @@ defmodule Satellite.MixProject do
       {:jason, "~> 1.4"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_sqs, "~> 3.3"},
+      {:ex_aws_kinesis, "~> 2.0"},
+      {:ex_aws_sts, "~> 2.0"},
       {:hackney, "~> 1.9"},
       {:sweet_xml, "~> 0.6"},
       {:broadway, "~> 1.0"},
       {:broadway_sqs, "~> 0.7.1"},
-      {:elixir_uuid, "~> 1.2"}
+      {:elixir_uuid, "~> 1.2"},
+      {:configparser_ex, "~> 4.0"},
+      {:avrora, "~> 0.27"},
+      {:ecto_ulid, "~> 0.3"}
     ]
   end
 end

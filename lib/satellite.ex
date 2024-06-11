@@ -5,7 +5,11 @@ defmodule Satellite do
 
   alias Broadway.Message
 
-  @allowed_producer_list [Satellite.RedisProducer, Satellite.SQSProducer]
+  @allowed_producer_list [
+    Satellite.RedisProducer,
+    Satellite.KinesisProducer,
+    Satellite.SQSProducer
+  ]
 
   def start_link(_config) do
     {producer, _producer_opts} =
