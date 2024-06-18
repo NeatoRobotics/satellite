@@ -47,7 +47,7 @@ defmodule Satellite.KinesisProducer do
   def send(event, _opts) do
     raise """
       #{__MODULE__} is unable to handle the event #{inspect(event)}
-      The event is missing some required fields
+      The event is missing some required fields or is not supported.
     """
   end
 end
