@@ -6,13 +6,8 @@ defmodule Satellite.Producer do
   """
 
   alias Broadway.Message
+  alias Satellite.Event
 
-  @type event :: %{
-          required(:event_type) => String.t(),
-          required(:payload) => map(),
-          optional(:entity_type) => String.t(),
-          optional(:entity_id) => String.t()
-        }
-
-  @callback send(Message.t() | [Message.t()], producer_opts :: map()) :: :ok | {:error, term()}
+  @callback send(Message.t() | [Message.t()] | Event.t(), producer_opts :: map()) ::
+              :ok | {:error, term()}
 end

@@ -3,15 +3,13 @@ defmodule Satellite.KinesisProducer do
 
   require Logger
 
-  alias Broadway.Message
-
   @impl true
   def send(broadway_messages, opts) when is_list(broadway_messages) do
     Logger.info("#{__MODULE__} sending a batch of events to Amazon Kinesis")
 
     kinesis_role_arn = opts.kinesis_role_arn
 
-    records = Enum.map(broadway_messages, & &1.data)
+    records = Enum.map(broadway_messages, &%{data: &1.data, partition_key: Ecto.ULID.generate()})
 
     with {:ok, %{body: body}} <-
            kinesis_role_arn

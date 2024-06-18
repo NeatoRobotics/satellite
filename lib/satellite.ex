@@ -67,11 +67,17 @@ defmodule Satellite do
   end
 
   def handle_batch(_default, msgs, _, %{producer: {producer, producer_opts}}) do
-    Logger.info("#{__MODULE__}.handle_batch/3 called with #{length(msgs)} messages")
+    Logger.info("#{__MODULE__}.handle_batch/3 called with #{length(msgs)} message(s)")
 
     producer.send(msgs, producer_opts)
 
     msgs
+  end
+
+  @spec send(Event.t(), producer_opts :: map()) :: :ok | {:error, term()}
+  def send(event) do
+    {producer, producer_opts} = Application.fetch_env!(:satellite, :producer)
+    producer.send(event, producer_opts)
   end
 
   defp services do

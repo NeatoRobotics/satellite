@@ -4,6 +4,7 @@ defmodule Satellite.SQSProducer do
   require Logger
 
   alias Broadway.Message
+  alias Satellite.Event
 
   @impl true
   def send([message], opts), do: __MODULE__.send(message, opts)
@@ -26,69 +27,62 @@ defmodule Satellite.SQSProducer do
     |> case do
       {:ok, response} ->
         Logger.info("batch of messages were successfully sent to sqs", response: response)
+        :ok
 
-      {:error, error} ->
-        Logger.error("failed sending batch of messages to sqs", reason: error)
-    end
-  end
-
-  def send(
-        %Message{
-          data: %{
-            "entity_type" => entity_type,
-            "entity_id" => entity_id,
-            "event_type" => event_type,
-            "payload" => payload
-          }
-        },
-        opts
-      )
-      when not is_nil(entity_id) do
-    Logger.info(
-      "Sending event #{event_type} to Amazon SQS queue #{opts.queue_url}",
-      payload: payload
-    )
-
-    message = Satellite.Message.new(entity_type, entity_id, event_type, payload)
-
-    sqs_config = [retries: opts.retries]
-    message_group_id = "#{entity_type}:#{entity_id}:#{event_type}"
-
-    opts
-    |> Map.fetch!(:queue_url)
-    |> ExAws.SQS.send_message(Jason.encode!(message), message_group_id: message_group_id)
-    |> ExAws.request(sqs_config)
-    |> case do
-      {:ok, response} ->
-        Logger.info("Successfully sent a message to sqs", response: response)
-
-      {:error, error} ->
-        Logger.error("Failed to send  a message to sqs", reason: error)
+      {:error, error_msg} = error ->
+        Logger.error("failed sending batch of messages to sqs", reason: error_msg)
+        error
     end
   end
 
   @impl true
-  def send(%Message{data: %{"event_type" => event_type, "payload" => payload}}, opts) do
+  def send(%Message{data: %{"event_type" => event_type, "origin" => origin} = event}, opts) do
     Logger.info(
       "Sending event #{event_type} to Amazon SQS queue #{opts.queue_url}",
-      payload: payload
+      event: event
     )
 
-    message = Satellite.Message.new(event_type, payload)
-
     sqs_config = [retries: opts.retries]
-    message_group_id = "global:#{event_type}"
+    message_group_id = "#{origin}:#{event_type}"
 
     opts
     |> Map.fetch!(:queue_url)
-    |> ExAws.SQS.send_message(Jason.encode!(message), message_group_id: message_group_id)
+    |> ExAws.SQS.send_message(Jason.encode!(event), message_group_id: message_group_id)
     |> ExAws.request(sqs_config)
     |> case do
       {:ok, response} ->
         Logger.info("Successfully sent a message to sqs", response: response)
+        :ok
 
-      {:error, error} ->
-        Logger.error("Failed to send  a message to sqs", reason: error)
+      {:error, error_msg} = error ->
+        Logger.error("Failed to send  a message to sqs", reason: error_msg)
+        error
+    end
+  end
+
+  @impl true
+  def send(%Event{event_type: event_type, origin: origin} = event, opts) do
+    Logger.info(
+      "Sending event #{event_type} from #{origin} to Amazon SQS queue #{opts.queue_url}",
+      event
+    )
+
+    sqs_config = [retries: opts.retries]
+    message_group_id = "#{origin}:#{event_type}"
+
+    opts
+    |> Map.fetch!(:queue_url)
+    |> ExAws.SQS.send_message(Jason.encode!(event), message_group_id: message_group_id)
+    |> ExAws.request(sqs_config)
+    |> case do
+      {:ok, response} ->
+        Logger.info("Successfully sent a message to sqs", response: response)
+        :ok
+
+      {:error, error_msg} = error ->
+        Logger.error("Failed to send a message to sqs", reason: error_msg)
+
+        error
     end
   end
 
