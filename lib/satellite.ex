@@ -13,7 +13,7 @@ defmodule Satellite do
 
   def start_link(_config) do
     {producer, _producer_opts} =
-      producer_with_opts = Application.fetch_env!(:satellite, :producer)
+      producer_with_opts = Application.fetch_env!(:satellite, :bridge)[:producer]
 
     _enabled = Application.fetch_env!(:satellite, :enabled)
     _origin = Application.fetch_env!(:satellite, :origin)
@@ -31,10 +31,12 @@ defmodule Satellite do
         producer: producer_with_opts
       },
       producer: [
-        module: Application.fetch_env!(:satellite, :consumer)
+        module: Application.fetch_env!(:satellite, :bridge)[:consumer]
       ],
       processors: [
-        default: [concurrency: Application.fetch_env!(:satellite, :processors_concurrency)]
+        default: [
+          concurrency: Application.fetch_env!(:satellite, :bridge)[:processors_concurrency]
+        ]
       ],
       batchers: [
         default: batchers_config()
@@ -74,17 +76,17 @@ defmodule Satellite do
     msgs
   end
 
-  @spec send(Event.t(), producer_opts :: map()) :: :ok | {:error, term()}
+  @spec send(Event.t()) :: :ok | {:error, term()}
   def send(event) do
     {producer, producer_opts} = Application.fetch_env!(:satellite, :producer)
     producer.send(event, producer_opts)
   end
 
   defp services do
-    Application.fetch_env!(:satellite, :services)
+    Application.fetch_env!(:satellite, :bridge)[:services]
   end
 
   defp batchers_config do
-    Application.fetch_env!(:satellite, :batchers)
+    Application.fetch_env!(:satellite, :bridge)[:batchers]
   end
 end
