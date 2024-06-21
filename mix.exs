@@ -4,10 +4,19 @@ defmodule Satellite.MixProject do
   def project do
     [
       app: :satellite,
-      version: "0.1.0",
+      version: "0.6.5",
       elixir: "~> 1.14",
+      dialyzer: dialyzer(),
       start_permanent: Mix.env() == :prod,
       deps: deps()
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_add_deps: :app_tree,
+      plt_add_apps: [:ex_unit, :mix],
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
     ]
   end
 
@@ -33,7 +42,9 @@ defmodule Satellite.MixProject do
       {:broadway_sqs, "~> 0.7.1"},
       {:elixir_uuid, "~> 1.2"},
       {:configparser_ex, "~> 4.0"},
-      {:ecto_ulid, "~> 0.3"}
+      {:ecto_ulid, "~> 0.3"},
+      {:ok, "~> 2.3"},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]
   end
 end
