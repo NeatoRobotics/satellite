@@ -88,7 +88,13 @@ defmodule Satellite do
   def handle_batch(_default, msgs, _, %{producer: {producer, producer_opts}}) do
     Logger.info("#{__MODULE__}.handle_batch/3 called with #{length(msgs)} message(s)")
 
-    producer.send(msgs, producer_opts)
+    enabled? = Map.get(producer_opts, :enabled?, true)
+
+    if enabled? do
+      producer.send(msgs, producer_opts)
+    else
+      Logger.info("Skipping handle_batch as producer is disabled")
+    end
 
     msgs
   end
