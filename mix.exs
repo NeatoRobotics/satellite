@@ -33,7 +33,6 @@ defmodule Satellite.MixProject do
       {:broadway_sqs, "~> 0.7.1"},
       {:elixir_uuid, "~> 1.2"},
       {:configparser_ex, "~> 4.0"},
-      {:avrora, "~> 0.27"},
       {:ecto_ulid, "~> 0.3"}
     ]
   end

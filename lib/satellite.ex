@@ -12,6 +12,23 @@ defmodule Satellite do
   ]
 
   def start_link(_config) do
+    bridge_opts = Application.get_env(:satellite, :bridge)
+
+    if is_nil(bridge_opts) or Enum.empty?(bridge_opts) do
+      raise(
+        ArgumentError,
+        """
+        In order to start satellite, provide the bridge configurations.
+
+        config :satellite,
+          bridge: [
+            producer: {...}
+            consumer: {...}
+          ]
+        """
+      )
+    end
+
     {producer, _producer_opts} =
       producer_with_opts = Application.fetch_env!(:satellite, :bridge)[:producer]
 
