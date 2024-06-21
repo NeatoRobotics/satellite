@@ -1,5 +1,6 @@
 defmodule Satellite do
   use Broadway
+  use OK.Pipe
 
   require Logger
 
@@ -61,28 +62,29 @@ defmodule Satellite do
     )
   end
 
+  @spec handle_message(atom(), Broadway.Message.t(), term()) :: Broadway.Message.t()
   def handle_message(_processor_name, message, _context) do
     Logger.info("#{__MODULE__} handling message #{inspect(message)}")
 
-    Message.update_data(message, &process_data/1)
-  end
+    case process_data(message.data) do
+      {:ok, data} ->
+        %{message | data: data |> Jason.encode!()}
 
-  def process_data(event) do
-    event = Jason.decode!(event)
-
-    Enum.reduce_while(services(), event, fn module, event ->
-      case apply(module, :process, [event]) do
-        {:ok, event} -> {:cont, event}
-        {:error, error} -> {:halt, {:error, error}}
-      end
-    end)
-    |> case do
       {:error, error} ->
         Logger.error(error)
-
-      event ->
-        event
+        Message.failed(message, error)
     end
+  end
+
+  @spec process_data(term()) :: {:ok, term()} | {:error, term()}
+  def process_data(data) do
+    # FIXME: Should we decode here? Or should this happen at the boundary of the app?
+    data = Jason.decode!(data)
+
+    services()
+    |> Enum.reduce({:ok, data}, fn service, acc ->
+      acc ~>> apply_service(service)
+    end)
   end
 
   def handle_batch(_default, msgs, _, %{producer: {producer, producer_opts}}) do
@@ -99,17 +101,20 @@ defmodule Satellite do
     msgs
   end
 
-  @spec send(Event.t()) :: :ok | {:error, term()}
   def send(event) do
     {producer, producer_opts} = Application.fetch_env!(:satellite, :producer)
     producer.send(event, producer_opts)
   end
 
-  defp services do
+  def services do
     Application.fetch_env!(:satellite, :bridge)[:services]
   end
 
   defp batchers_config do
     Application.fetch_env!(:satellite, :bridge)[:batchers]
+  end
+
+  defp apply_service(x, service) do
+    apply(service, :process, [x])
   end
 end

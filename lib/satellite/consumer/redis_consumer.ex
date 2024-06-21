@@ -69,26 +69,22 @@ defmodule Satellite.RedisConsumer do
 
   @impl true
   def handle_info(
-        {:redix_pubsub, redix_pid, _subscription_ref, :pmessage, message_properties},
+        {:redix_pubsub, redix_pid, _subscription_ref, :pmessage, message},
         %{redix_pid: redix_pid} = state
       ) do
-    Logger.info(
-      "Received message #{inspect(message_properties.payload)} of type #{inspect(:message)}"
-    )
+    Logger.info("Received message #{inspect(message.payload)} of type #{inspect(:message)}")
 
-    forward_message_to_broadway(message_properties, state)
+    forward_message_to_broadway(message, state)
   end
 
   @impl true
   def handle_info(
-        {:redix_pubsub, redix_pid, _subscription_ref, :message, message_properties},
+        {:redix_pubsub, redix_pid, _subscription_ref, :message, message},
         %{redix_pid: redix_pid} = state
       ) do
-    Logger.info(
-      "Received message #{inspect(message_properties.payload)} of type #{inspect(:message)}"
-    )
+    Logger.info("Received message #{inspect(message.payload)} of type #{inspect(:message)}")
 
-    forward_message_to_broadway(message_properties, state)
+    forward_message_to_broadway(message, state)
   end
 
   @impl true

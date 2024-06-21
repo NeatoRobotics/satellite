@@ -26,3 +26,6 @@ satellite-*.tar
 /tmp/
 
 .idea
+
+# Dialyzer plt files
+/priv/
