@@ -1,23 +1,26 @@
-defmodule Satellite.KinesisProducer do
-  @behaviour Satellite.Producer
+defmodule Satellite.Bridge.Sink.Kinesis do
+  @behaviour Satellite.Bridge.Sink.Behaviour
 
   require Logger
 
   @impl true
-  def send(broadway_messages, opts) when is_list(broadway_messages) do
+  def send(broadway_messages,
+        kinesis_role_arn: kinesis_role_arn,
+        kinesis_stream_name: stream_name,
+        assume_role_region: assume_role_region
+      )
+      when is_list(broadway_messages) do
     Logger.info("#{__MODULE__} sending a batch of events to Amazon Kinesis")
-
-    kinesis_role_arn = opts.kinesis_role_arn
 
     records = Enum.map(broadway_messages, &%{data: &1.data, partition_key: Ecto.ULID.generate()})
 
+    # NOTE: we might move the write specifics to a support module
+    # FIXME: Store the creds and are not expired reuse them instead of calling AWS to get requests every time
     with {:ok, %{body: body}} <-
            kinesis_role_arn
            |> ExAws.STS.assume_role(UUID.uuid4())
            |> ExAws.request() do
       Logger.debug("sending batch of events to kinesis")
-      stream_name = opts.kinesis_stream_name
-      assume_role_region = opts.assume_role_region
 
       stream_name
       |> ExAws.Kinesis.put_records(records)
@@ -33,21 +36,23 @@ defmodule Satellite.KinesisProducer do
           Logger.info("batch of messages were successfully sent to kinesis", response: response)
 
         {:error, error} ->
+          # NOTE: Should we be raising or failing the message?
           Logger.error("failed sending batch of messages to kinesis", reason: error)
       end
     else
       {:error, error} ->
+        # NOTE: Should we be raising or failing the message?
         Logger.error("failed to assume role", reason: error)
 
       error ->
+        # NOTE: Should we be raising or failing the message?
         Logger.error("failed to assume role", reason: error)
     end
   end
 
-  def send(event, _opts) do
-    raise """
-      #{__MODULE__} is unable to handle the event #{inspect(event)}
-      The event is missing some required fields or is not supported.
-    """
+  @impl true
+  def send(_broadway_messages, opts) do
+    # NOTE: Should we be raising or failing the message?
+    Logger.error("Missing kinesis configuration parameters", opts: opts)
   end
 end

@@ -1,4 +1,4 @@
-defmodule Satellite.RedisConsumer do
+defmodule Satellite.Bridge.Source.Redis do
   use GenStage
 
   require Logger
@@ -61,7 +61,7 @@ defmodule Satellite.RedisConsumer do
         %{redix_pid: redix_pid} = state
       ) do
     Logger.info(
-      "Phoenix.PubSub disconnected from Redis with reason #{inspect(reason)} (awaiting reconnection)"
+      "Redis source disconnected from Redis with reason #{inspect(reason)} (awaiting reconnection)"
     )
 
     {:noreply, state}
@@ -69,20 +69,11 @@ defmodule Satellite.RedisConsumer do
 
   @impl true
   def handle_info(
-        {:redix_pubsub, redix_pid, _subscription_ref, :pmessage, message},
+        {:redix_pubsub, redix_pid, _subscription_ref, symbol, message},
         %{redix_pid: redix_pid} = state
-      ) do
-    Logger.info("Received message #{inspect(message.payload)} of type #{inspect(:message)}")
-
-    forward_message_to_broadway(message, state)
-  end
-
-  @impl true
-  def handle_info(
-        {:redix_pubsub, redix_pid, _subscription_ref, :message, message},
-        %{redix_pid: redix_pid} = state
-      ) do
-    Logger.info("Received message #{inspect(message.payload)} of type #{inspect(:message)}")
+      )
+      when symbol in [:message, :pmessage] do
+    Logger.info("Received pubsub message", event: message)
 
     forward_message_to_broadway(message, state)
   end
@@ -101,7 +92,7 @@ defmodule Satellite.RedisConsumer do
 
   @impl true
   def handle_info(message, state) do
-    Logger.info("Received unknown message #{inspect(message)}")
+    Logger.info("Received unknown message", event: message)
 
     {:noreply, state}
   end
@@ -155,26 +146,5 @@ defmodule Satellite.RedisConsumer do
   defp schedule_reconnect(%{reconnect_timer: timer}) do
     timer && Process.cancel_timer(timer)
     Process.send_after(self(), :establish_conn, @reconnect_after_ms)
-  end
-
-  def publish(redix_pid, channel, message) do
-    case Redix.command(redix_pid, ["PUBLISH", channel, Jason.encode!(message)]) do
-      {:ok, _} ->
-        :ok
-
-      {:error, %Redix.ConnectionError{reason: :closed} = error} ->
-        Logger.info(
-          "failed to publish broadcast due to closed redis connection: #{inspect(error)}"
-        )
-
-        {:error, :connection_closed}
-
-      {:error, reason} ->
-        Logger.info(
-          "failed to publish broadcast due to closed redis connection: #{inspect(reason)}"
-        )
-
-        {:error, reason}
-    end
   end
 end

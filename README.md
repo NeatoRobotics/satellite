@@ -1,18 +1,18 @@
 # Satellite
 
-**Satellite helps you to easily start a pool of Consumers and Producers in your application**
+**Satellite helps you to easily start a pool of Event Sources and Sinks in your application**
 
-### The following consumers are supported
+### The following sources are supported
 
 - [x] Redis Pubsub
 - [ ] Amazon SQS
 - [ ] RabbitMQ
 
-### The following producers are supported
+### The following sinks are supported
 
 - [x] Redis 
 - [x] Amazon SQS
-- [ ] Kinesis
+- [x] Kinesis
 - [ ] RabbitMQ
 
 more details will be added soon...
