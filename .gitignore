@@ -29,3 +29,5 @@ satellite-*.tar
 
 # Dialyzer plt files
 /priv/
+
+*.iml
