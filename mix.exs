@@ -23,7 +23,8 @@ defmodule Satellite.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Satellite.Application, []}
     ]
   end
 
@@ -44,7 +45,9 @@ defmodule Satellite.MixProject do
       {:configparser_ex, "~> 4.0"},
       {:ecto_ulid, "~> 0.3"},
       {:ok, "~> 2.3"},
-      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
+      {:mock, "~> 0.3.0", only: :test},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
+      {:logfmt_ex, github: "NeatoRobotics/logfmt_ex", tag: "v0.4.2-fix"}
     ]
   end
 end

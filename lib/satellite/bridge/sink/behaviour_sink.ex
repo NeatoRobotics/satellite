@@ -1,4 +1,4 @@
-defmodule Satellite.Producer do
+defmodule Satellite.Bridge.Sink.Behaviour do
   @moduledoc """
   A generic behaviour to implement a Satellite Producer.
 
@@ -6,8 +6,6 @@ defmodule Satellite.Producer do
   """
 
   alias Broadway.Message
-  alias Satellite.Event
 
-  @callback send(Message.t() | [Message.t()] | Event.t(), producer_opts :: map()) ::
-              :ok | {:error, term()}
+  @callback send([Message.t()], opts :: map()) :: :ok | {:error, term()}
 end
