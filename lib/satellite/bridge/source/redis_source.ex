@@ -1,4 +1,4 @@
-defmodule Satellite.RedisConsumer do
+defmodule Satellite.Bridge.Source.Redis do
   use GenStage
 
   require Logger
@@ -61,7 +61,7 @@ defmodule Satellite.RedisConsumer do
         %{redix_pid: redix_pid} = state
       ) do
     Logger.info(
-      "Phoenix.PubSub disconnected from Redis with reason #{inspect(reason)} (awaiting reconnection)"
+      "Redis source disconnected from Redis with reason #{inspect(reason)} (awaiting reconnection)"
     )
 
     {:noreply, state}
@@ -155,26 +155,5 @@ defmodule Satellite.RedisConsumer do
   defp schedule_reconnect(%{reconnect_timer: timer}) do
     timer && Process.cancel_timer(timer)
     Process.send_after(self(), :establish_conn, @reconnect_after_ms)
-  end
-
-  def publish(redix_pid, channel, message) do
-    case Redix.command(redix_pid, ["PUBLISH", channel, Jason.encode!(message)]) do
-      {:ok, _} ->
-        :ok
-
-      {:error, %Redix.ConnectionError{reason: :closed} = error} ->
-        Logger.info(
-          "failed to publish broadcast due to closed redis connection: #{inspect(error)}"
-        )
-
-        {:error, :connection_closed}
-
-      {:error, reason} ->
-        Logger.info(
-          "failed to publish broadcast due to closed redis connection: #{inspect(reason)}"
-        )
-
-        {:error, reason}
-    end
   end
 end
