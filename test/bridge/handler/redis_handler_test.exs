@@ -1,0 +1,9 @@
+defmodule Satellite.Handler.RedisHandlerTest do
+  use ExUnit.Case
+
+  describe "send/2" do
+    test "foo" do
+      assert false
+    end
+  end
+end

@@ -15,6 +15,7 @@ defmodule Satellite.Bridge.Sink.Kinesis do
     records = Enum.map(broadway_messages, &%{data: &1.data, partition_key: Ecto.ULID.generate()})
 
     # NOTE: we might move the write specifics to a support module
+    # FIXME: Store the creds and are not expired reuse them instead of calling AWS to get requests every time
     with {:ok, %{body: body}} <-
            kinesis_role_arn
            |> ExAws.STS.assume_role(UUID.uuid4())

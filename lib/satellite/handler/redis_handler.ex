@@ -1,10 +1,11 @@
-defmodule Satellite.Handler.Redis do
+defmodule Satellite.Handler.RedisHandler do
   @behaviour Satellite.Handler.Behaviour
 
   require Logger
 
   alias Satellite.Event
 
+  # FIXME: Why is the option called :redix_process instead of :name?? How is this working at all?
   @impl true
   def send(%Event{type: type, origin: origin} = event, opts \\ [redix_process: redix_process()]) do
     Logger.info("sending event to channel #{origin}:#{type}", event: event)

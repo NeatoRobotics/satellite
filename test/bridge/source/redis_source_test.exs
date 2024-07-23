@@ -3,7 +3,7 @@ defmodule Satellite.Bridge.Source.RedisTest do
 
   alias Satellite.Bridge.Source
   alias Satellite.Event
-  alias Satellite.Handler.Redis
+  alias Satellite.Handler.RedisHandler
 
   describe "get messages" do
     setup do
@@ -22,8 +22,8 @@ defmodule Satellite.Bridge.Source.RedisTest do
       event1 = Event.new(%{type: "foo", origin: "robot", payload: %{a: 1}})
       event2 = Event.new(%{type: "bar", origin: "user", payload: %{b: 1}})
 
-      Redis.send(event1)
-      Redis.send(event2)
+      RedisHandler.send(event1)
+      RedisHandler.send(event2)
 
       json_event1 = Jason.encode!(event1)
       json_event2 = Jason.encode!(event2)
@@ -38,7 +38,7 @@ defmodule Satellite.Bridge.Source.RedisTest do
     test "does not receive events on the channel is not listening to" do
       event = %Event{type: "foo", origin: "other", payload: %{a: 1}}
 
-      Redis.send(event)
+      RedisHandler.send(event)
 
       refute_receive {:received, _}
     end

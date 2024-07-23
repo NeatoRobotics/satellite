@@ -4,6 +4,7 @@ defmodule Satellite.Bridge do
 
   alias Broadway.Message
 
+  # FIXME: Maybe we should take it out to let the apps that use Satellite to define their own sinks
   @allowed_sink_list [
     Satellite.Bridge.Sink.Redis,
     Satellite.Bridge.Sink.SQS,

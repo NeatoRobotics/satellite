@@ -11,13 +11,6 @@ defmodule Satellite.Bridge.Sink.Redis do
   end
 
   @impl true
-  def send([%Message{data: event}], %{channel_out: channel}) do
-    Logger.info("sending event to channel #{channel}", event: event)
-
-    do_send(event, channel)
-  end
-
-  @impl true
   def send(broadway_messages, %{channel_out: _channel} = opts) when is_list(broadway_messages) do
     Logger.info("#{__MODULE__} sending a batch of events to Redis")
 

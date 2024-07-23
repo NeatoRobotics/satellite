@@ -14,7 +14,6 @@ defmodule Satellite.Application do
   def children() do
     [
       child_specs(Application.get_env(:satellite, :handler)),
-      child_specs(Application.get_env(:satellite, :bridge)),
       child_specs({Satellite.Bridge, []})
     ]
     |> List.flatten()

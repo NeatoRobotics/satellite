@@ -3,7 +3,7 @@ import Config
 config :satellite,
   origin: "foo",
   handler:
-    {Satellite.Handler.Redis,
+    {Satellite.Handler.RedisHandler,
      connection: [
        host: "127.0.0.1",
        port: 6379
