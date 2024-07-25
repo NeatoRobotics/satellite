@@ -1,9 +1,9 @@
 defmodule Satellite.BridgeTest do
   use ExUnit.Case, async: false
 
-  alias Satellite.Bridge
-  alias Satellite.Handler.Redis
   alias Ecto.UUID
+  alias Satellite.Bridge
+  alias Satellite.Handler
   alias Satellite.Event
 
   import Mock
@@ -28,7 +28,7 @@ defmodule Satellite.BridgeTest do
           {:ok, :ok}
         end do
         event1 = %Event{type: "foo", origin: "robot", payload: %{a: 1}}
-        RedisHandler.send(event1)
+        Handler.Redis.send(event1)
 
         assert_receive {:message, data}
 

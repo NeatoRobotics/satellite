@@ -1,6 +1,6 @@
 defmodule Satellite.Event do
   @derive Jason.Encoder
-  defstruct [:id, :origin, :timestamp, :version, :type, :context, :payload]
+  defstruct [:id, :origin, :timestamp, :version, :type, :payload]
 
   # TODO make validation for this
   @type t :: %__MODULE__{
@@ -9,7 +9,6 @@ defmodule Satellite.Event do
           timestamp: binary(),
           version: integer(),
           type: binary(),
-          context: map(),
           payload: map()
         }
 
