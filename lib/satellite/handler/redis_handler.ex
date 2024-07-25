@@ -1,4 +1,4 @@
-defmodule Satellite.Handler.RedisHandler do
+defmodule Satellite.Handler.Redis do
   @behaviour Satellite.Handler.Behaviour
 
   require Logger

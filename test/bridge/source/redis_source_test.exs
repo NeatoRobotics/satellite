@@ -3,7 +3,7 @@ defmodule Satellite.Bridge.Source.RedisTest do
 
   alias Satellite.Bridge.Source
   alias Satellite.Event
-  alias Satellite.Handler.RedisHandler
+  alias Satellite.Handler.Redis
 
   describe "get messages" do
     setup do

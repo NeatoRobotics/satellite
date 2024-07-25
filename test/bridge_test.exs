@@ -2,7 +2,7 @@ defmodule Satellite.BridgeTest do
   use ExUnit.Case, async: false
 
   alias Satellite.Bridge
-  alias Satellite.Handler.RedisHandler
+  alias Satellite.Handler.Redis
   alias Ecto.UUID
   alias Satellite.Event
 
