@@ -73,7 +73,7 @@ defmodule Satellite.Bridge.Source.Redis do
         %{redix_pid: redix_pid} = state
       )
       when symbol in [:message, :pmessage] do
-    Logger.info("Received message #{inspect(message.payload)} of type #{inspect(:message)}")
+    Logger.info("Received pubsub message", event: message)
 
     forward_message_to_broadway(message, state)
   end
@@ -92,7 +92,7 @@ defmodule Satellite.Bridge.Source.Redis do
 
   @impl true
   def handle_info(message, state) do
-    Logger.info("Received unknown message #{inspect(message)}")
+    Logger.info("Received unknown message", event: message)
 
     {:noreply, state}
   end

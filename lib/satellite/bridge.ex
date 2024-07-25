@@ -50,7 +50,7 @@ defmodule Satellite.Bridge do
   def handle_message(_processor_name, message, _context) do
     message_str = "#{inspect(message)}"
 
-    Logger.info("#{__MODULE__} handling message", message: message_str)
+    Logger.info("#{__MODULE__} handling message", event: message_str)
 
     case process_data(message.data, __MODULE__.services()) do
       {:ok, data} ->
@@ -58,7 +58,7 @@ defmodule Satellite.Bridge do
 
       {:error, error} ->
         Logger.error("#{__MODULE__} failed processing message",
-          message: message_str,
+          event: message_str,
           reason: error
         )
 

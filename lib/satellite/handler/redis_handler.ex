@@ -22,14 +22,16 @@ defmodule Satellite.Handler.Redis do
 
       {:error, %Redix.ConnectionError{reason: :closed} = error} ->
         Logger.info(
-          "failed to publish broadcast due to closed redis connection: #{inspect(error)}"
+          "failed to publish broadcast due to closed redis connection",
+          error: error
         )
 
         {:error, :connection_closed}
 
       {:error, reason} ->
         Logger.info(
-          "failed to publish broadcast due to closed redis connection: #{inspect(reason)}"
+          "failed to publish broadcast due to closed redis connection",
+          error: reason
         )
 
         {:error, reason}
