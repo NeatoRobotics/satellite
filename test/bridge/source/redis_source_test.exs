@@ -29,6 +29,7 @@ defmodule Satellite.Bridge.Source.RedisTest do
       json_event2 = Jason.encode!(event2)
 
       assert_receive {:received, [message1]}
+      :timer.sleep(100)
       assert_receive {:received, [message2]}
 
       assert message1.data == json_event1
