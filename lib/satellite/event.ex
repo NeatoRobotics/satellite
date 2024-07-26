@@ -6,7 +6,7 @@ defmodule Satellite.Event do
   @type t :: %__MODULE__{
           id: Ecto.UUID.t(),
           origin: binary(),
-          timestamp: binary(),
+          timestamp: DateTime.t(),
           version: integer(),
           type: binary(),
           payload: map()
