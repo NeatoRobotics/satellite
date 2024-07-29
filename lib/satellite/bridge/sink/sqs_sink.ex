@@ -4,9 +4,12 @@ defmodule Satellite.Bridge.Sink.SQS do
   require Logger
 
   @impl true
-  def send(broadway_messages, retries: retries, queue_url: queue_url)
+  def send(broadway_messages, aws_config: aws_config, queue_url: queue_url)
       when is_list(broadway_messages) do
-    Logger.info("#{__MODULE__} sending a batch of events to Amazon SQS queue")
+    Logger.info("#{__MODULE__} sending a batch of events to Amazon SQS queue",
+      aws_config: aws_config,
+      queue_url: queue_url
+    )
 
     sqs_messages =
       Enum.map(broadway_messages, fn message ->
@@ -16,7 +19,7 @@ defmodule Satellite.Bridge.Sink.SQS do
 
     queue_url
     |> ExAws.SQS.send_message_batch(sqs_messages)
-    |> ExAws.request(retries: retries)
+    |> ExAws.request(aws_config)
     |> case do
       {:ok, response} ->
         Logger.info("batch of messages were successfully sent to sqs", response: response)

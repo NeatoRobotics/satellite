@@ -10,7 +10,16 @@ defmodule Satellite.Bridge.Sink.SQSTest do
       message = %Broadway.Message{acknowledger: nil, data: Jason.encode!(2)}
 
       sink_opts = [
-        retries: 1,
+        aws_config: [
+          :sqs,
+          region: "eu-central-1",
+          host: "sqs.eu-central-1.amazonaws.com",
+          retries: %{
+            max_attempts: 2,
+            base_backoff_in_ms: 10,
+            max_backoff_in_ms: 10_000
+          }
+        ],
         queue_url: "foo_url"
       ]
 
