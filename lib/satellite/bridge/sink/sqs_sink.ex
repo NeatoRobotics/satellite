@@ -8,13 +8,16 @@ defmodule Satellite.Bridge.Sink.SQS do
       when is_list(broadway_messages) do
     Logger.info("#{__MODULE__} sending a batch of events to Amazon SQS queue",
       aws_config: aws_config,
-      queue_url: queue_url
+      queue_url: queue_url,
+      # FIXME: remove this eventually!!
+      messages: broadway_messages
     )
 
     sqs_messages =
-      Enum.map(broadway_messages, fn message ->
-        identifier = UUID.uuid4()
-        [id: identifier, message_body: Jason.encode!(message.data), message_group_id: identifier]
+      Enum.map(broadway_messages, fn %{data: event, metadata: metadata} ->
+        message_id = Map.get(metadata, :message_id, UUID.uuid4())
+        group_id = Map.get(metadata, :group_id, UUID.uuid4())
+        [id: message_id, message_body: event, message_group_id: group_id]
       end)
 
     queue_url

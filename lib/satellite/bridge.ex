@@ -53,8 +53,8 @@ defmodule Satellite.Bridge do
     Logger.info("#{__MODULE__} handling message", event: message_str)
 
     case process_data(message.data, __MODULE__.services()) do
-      {:ok, data} ->
-        %{message | data: data}
+      {:ok, data, extras} ->
+        %{message | data: data, metadata: extras}
 
       {:error, error} ->
         Logger.error("#{__MODULE__} failed processing message",
@@ -66,12 +66,38 @@ defmodule Satellite.Bridge do
     end
   end
 
-  @spec process_data(term(), [any]) :: {:ok, term()} | {:error, term()}
+  @spec process_data(term(), [any]) :: {:ok, term(), map()} | {:error, term()}
   def process_data(data, services) do
-    Enum.reduce(services, Jason.decode(data), fn service, acc ->
-      acc ~>> apply_service(service)
-    end)
-    ~>> Jason.encode()
+    Jason.decode(data)
+    |> case do
+      {:ok, data} ->
+        Enum.reduce(services, {:ok, %{data: data, metadata: %{}}}, fn service, acc ->
+          acc
+          ~>> apply_service(service)
+          |> case do
+            {:ok, %{data: data, metadata: metadata}} ->
+              {:ok, %{metadata: metadata_acc}} = acc
+              {:ok, %{data: data, metadata: Map.merge(metadata_acc, metadata)}}
+
+            {:ok, data} ->
+              {:ok, %{metadata: metadata_acc}} = acc
+              {:ok, %{data: data, metadata: metadata_acc}}
+
+            error ->
+              error
+          end
+        end)
+        |> case do
+          {:ok, %{data: data, metadata: metadata}} ->
+            {:ok, data |> Jason.encode!(), metadata}
+
+          error ->
+            error
+        end
+
+      error ->
+        error
+    end
   end
 
   @impl true
@@ -112,7 +138,7 @@ defmodule Satellite.Bridge do
     Application.fetch_env!(:satellite, :bridge)[:services]
   end
 
-  defp apply_service(x, service) do
-    apply(service, :process, [x])
+  defp apply_service(%{data: data}, service) do
+    apply(service, :process, [data])
   end
 end

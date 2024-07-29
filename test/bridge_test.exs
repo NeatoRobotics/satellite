@@ -42,7 +42,13 @@ defmodule Satellite.BridgeTest do
     test "with happy path" do
       data = 2 |> Jason.encode!()
 
-      assert Bridge.process_data(data, [Double, Double, Double]) == {:ok, "16"}
+      assert Bridge.process_data(data, [Double, Double, Double]) == {:ok, "16", %{}}
+    end
+
+    test "with happy path and extras" do
+      data = %{with_extra: 5} |> Jason.encode!()
+
+      assert Bridge.process_data(data, [Double, Double, Double]) == {:ok, "40", %{foo: :bar}}
     end
 
     test "data not decodable" do
@@ -55,7 +61,7 @@ defmodule Satellite.BridgeTest do
     test "with failed path" do
       data = 2 |> Jason.encode!()
 
-      assert Bridge.process_data(data, [Double, Fail, Double]) == {:error, "Service error"}
+      assert Bridge.process_data(data, [Double, Fail, Double]) == {:error, :service_error}
     end
   end
 
@@ -80,7 +86,7 @@ defmodule Satellite.BridgeTest do
         message = Bridge.handle_message(nil, message, nil)
 
         assert message.data == "2"
-        assert message.status == {:failed, "Service error"}
+        assert message.status == {:failed, :service_error}
       end
     end
 

@@ -1,11 +1,13 @@
 ExUnit.start()
 
 defmodule Double do
+  def process(%{"with_extra" => x}), do: {:ok, %{data: 2 * x, metadata: %{foo: :bar}}}
+
   def process(x), do: {:ok, 2 * x}
 end
 
 defmodule Fail do
-  def process(_x), do: {:error, "Service error"}
+  def process(_x), do: {:error, :service_error}
 end
 
 defmodule TestConsumer do

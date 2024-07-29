@@ -7,7 +7,7 @@ defmodule Satellite.Bridge.Sink.SQSTest do
 
   describe "send/2" do
     setup do
-      message = %Broadway.Message{acknowledger: nil, data: Jason.encode!(2)}
+      message = %Broadway.Message{acknowledger: nil, data: %{a: 2}}
 
       sink_opts = [
         aws_config: [
