@@ -12,6 +12,10 @@ defmodule TripleWithMetadata do
   def process(x), do: {:ok, %{data: 3 * x, metadata: %{bar: x}}}
 end
 
+defmodule IdentityProcessor do
+  def process(x), do: {:ok, %{data: x}}
+end
+
 defmodule Fail do
   def process(_x), do: {:error, :service_error}
 end

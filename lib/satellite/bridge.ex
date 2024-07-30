@@ -123,7 +123,7 @@ defmodule Satellite.Bridge do
     %{data: data, metadata: Map.merge(metadata_acc, metadata)}
   end
 
-  defp merge_metadata(data, acc) do
+  defp merge_metadata(%{data: data}, acc) do
     {:ok, %{metadata: metadata_acc}} = acc
 
     %{data: data, metadata: metadata_acc}

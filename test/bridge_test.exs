@@ -78,6 +78,13 @@ defmodule Satellite.BridgeTest do
       assert Bridge.process_data(data, [Double, DoubleWithMetadata, TripleWithMetadata]) ==
                {:ok, %{data: "60", metadata: %{foo: 10, bar: 20}}}
     end
+
+    test "with mixed keys" do
+      event = %{"foo" => "bar"} |> Jason.encode!()
+
+      assert Bridge.process_data(event, [IdentityProcessor]) ==
+               {:ok, %{data: event, metadata: %{}}}
+    end
   end
 
   describe "handle_message/3" do
