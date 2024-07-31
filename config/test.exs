@@ -1,7 +1,7 @@
 import Config
 
 config :satellite,
-  origin: "foo",
+  origin: "satellite",
   handler:
     {Satellite.Handler.Redis,
      connection: [
@@ -10,19 +10,17 @@ config :satellite,
      ],
      name: :test_name},
   bridge: %{
-    services: [],
+    services: [IdentityProcessor],
     sink:
       {Satellite.Bridge.Sink.Kinesis,
        kinesis_role_arn: 1, kinesis_stream_name: "foo_stream", assume_role_region: "eu-west-1"},
     source:
       {Satellite.Bridge.Source.Redis,
        connection: [host: "127.0.0.1", port: 6379], channels: ["robot:*", "user:*"]},
-    processors_concurrency: 1,
+    processors_concurrency: 2,
     batchers: [
-      concurrency: 1,
+      concurrency: 2,
       batch_size: 1,
       batch_timeout: 5000
     ]
-  },
-  producer_module: Broadway.DummyProducer,
-  producer_options: []
+  }

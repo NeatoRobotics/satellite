@@ -33,7 +33,7 @@ defmodule Satellite.Bridge do
       },
       producer: [
         module: {source, source_opts},
-        concurrency: concurrency
+        concurrency: 1
       ],
       processors: [
         default: [
@@ -131,6 +131,16 @@ defmodule Satellite.Bridge do
 
   defp apply_service(%{data: data}, service) do
     apply(service, :process, [data])
+    |> case do
+      {:ok, event} ->
+        {:ok, %{data: event}}
+
+      {:ok, event, metadata} ->
+        {:ok, %{data: event, metadata: metadata}}
+
+      error ->
+        error
+    end
   end
 
   @spec encode_data(map()) :: {:ok, map()} | {:error, term()}
