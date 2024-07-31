@@ -6,5 +6,8 @@ defmodule Satellite.Bridge.ProcessorBehaviour do
   Source -> [Transformations] -> Sink
   """
 
-  @callback process(term) :: {:ok, term()} | {:error, term()}
+  @callback process(term) ::
+              {:ok, event :: term()}
+              | {:ok, event :: term(), metadata :: map()}
+              | {:error, :atom}
 end

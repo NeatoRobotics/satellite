@@ -8,7 +8,7 @@ defmodule Satellite.EventTest do
       event = Event.new(%{type: "test", payload: %{a: 1}})
 
       assert event.timestamp
-      assert %Event{origin: "foo", version: 1, type: "test", payload: %{a: 1}} = event
+      assert %Event{origin: "satellite", version: 1, type: "test", payload: %{a: 1}} = event
     end
 
     test "it can override default values" do

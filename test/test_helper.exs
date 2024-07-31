@@ -5,15 +5,15 @@ defmodule Double do
 end
 
 defmodule DoubleWithMetadata do
-  def process(x), do: {:ok, %{data: 2 * x, metadata: %{foo: x}}}
+  def process(x), do: {:ok, 2 * x, %{foo: x}}
 end
 
 defmodule TripleWithMetadata do
-  def process(x), do: {:ok, %{data: 3 * x, metadata: %{bar: x}}}
+  def process(x), do: {:ok, 3 * x, %{bar: x}}
 end
 
 defmodule IdentityProcessor do
-  def process(x), do: {:ok, %{data: x}}
+  def process(x), do: {:ok, x}
 end
 
 defmodule Fail do
