@@ -41,13 +41,16 @@ defmodule Satellite.MixProject do
       {:sweet_xml, "~> 0.6"},
       {:broadway, "~> 1.0"},
       {:broadway_sqs, "~> 0.7.1"},
-      {:elixir_uuid, "~> 1.2"},
       {:configparser_ex, "~> 4.0"},
       {:ecto_ulid, "~> 0.3"},
       {:ok, "~> 2.3"},
       {:mock, "~> 0.3.0", only: :test},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:logfmt_ex, github: "NeatoRobotics/logfmt_ex", tag: "v0.4.2-fix"}
+      {:logfmt_ex, github: "NeatoRobotics/logfmt_ex", tag: "v0.4.2-fix"},
+      {:typed_struct, "~> 0.3.0"},
+      {:elixir_avro, "~> 0.1.0"},
+      {:avrora, "~> 0.28.0"},
+      { :uuid, "~> 1.1" }
     ]
   end
 end

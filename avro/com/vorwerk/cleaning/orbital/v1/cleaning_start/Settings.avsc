@@ -1,0 +1,18 @@
+{
+  "namespace": "com.vorwerk.cleaning.orbital.v1.cleaning_start",
+  "type": "record",
+  "name": "Settings",
+  "doc": "Settings within a run",
+  "fields": [
+    {
+      "name": "navigation_mode",
+      "type": "string",
+      "doc": "a robot setting on how to navigate during cleaning"
+    },
+    {
+      "name": "mode",
+      "type": "string",
+      "doc": "a robot setting on how powerful the vacuuming should be"
+    }
+  ]
+}

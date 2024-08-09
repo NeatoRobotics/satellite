@@ -1,0 +1,35 @@
+{
+  "namespace": "com.vorwerk.cleaning.orbital.v1",
+  "type": "record",
+  "name": "Event",
+  "doc": "Event emitted by Orbital",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "logicalType": "uuid",
+      "doc": "the event ID, from Orbital"
+    },
+    {
+      "name": "origin",
+      "type": "string",
+      "doc": "the event type, from Orbital"
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "timestamp of message generation"
+    },
+    {
+      "name": "payload",
+      "type": [
+        "ChargeState",
+        "CleaningEnd",
+        "CleaningStart",
+        "DockingState",
+        "RobotError",
+        "RobotNotification"
+      ]
+    }
+  ]
+}

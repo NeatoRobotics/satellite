@@ -1,0 +1,43 @@
+{
+  "namespace": "com.vorwerk.cleaning.orbital.v1",
+  "type": "record",
+  "name": "CleaningEnd",
+  "doc": "Cleaning End event received from a robot",
+  "fields": [
+        {
+          "name": "robot_id",
+          "type": "string",
+          "logicalType": "uuid",
+          "doc": "the robot ID, from Orbital"
+        },
+        {
+          "name": "user_id",
+          "type": [
+            "null",
+            {
+              "type": "string",
+              "logicalType": "uuid"
+            }
+          ],
+          "doc": "the user ID, from Orbital"
+        },
+        {
+          "name": "serial",
+          "type": "string",
+          "doc": "the robot serial number"
+        },
+        {
+          "name": "firmware",
+          "type": [
+            "null",
+            "string"
+          ],
+          "doc": "the robot firmware at the time of event emission in Orbital"
+        },
+        {
+          "name": "robot_timestamp",
+          "type": "string",
+          "doc": "timestamp of event emission on the robot"
+        }
+      ]
+}

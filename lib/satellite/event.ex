@@ -12,13 +12,17 @@ defmodule Satellite.Event do
           payload: map()
         }
 
-  def new(attrs) do
-    id = Map.get(attrs, :id) || Ecto.UUID.generate()
-    origin = Map.get(attrs, :origin) || Application.fetch_env!(:satellite, :origin)
-    timestamp = Map.get(attrs, :timestamp) || DateTime.utc_now()
+  def new(payload, envelope \\ %{}) do
+    id = Map.get(envelope, :id) || Ecto.UUID.generate()
+    origin = Map.get(envelope, :origin) || Application.fetch_env!(:satellite, :origin)
+    timestamp = Map.get(envelope, :timestamp) || DateTime.utc_now()
+    timestamp = DateTime.to_string(timestamp)
 
-    default_values = %{id: id, origin: origin, timestamp: timestamp, version: 1}
-
-    struct!(__MODULE__, default_values |> Map.merge(attrs))
+    %Satellite.Com.Vorwerk.Cleaning.Orbital.V1.Event{
+      id: id,
+      origin: origin,
+      timestamp: timestamp,
+      payload: payload
+    }
   end
 end

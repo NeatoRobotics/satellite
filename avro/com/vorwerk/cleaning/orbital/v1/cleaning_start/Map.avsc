@@ -1,0 +1,36 @@
+{
+  "namespace": "com.vorwerk.cleaning.orbital.v1.cleaning_start",
+  "type": "record",
+  "name": "Map",
+  "doc": "Map within a run",
+
+  "fields": [
+    {
+      "name": "floorplan_uuid",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "doc": "the UUID of the floorplan this cleaning was performed on"
+    },
+    {
+      "name": "zone_uuid",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      ],
+      "doc": "the UUID of the zone this cleaning was performed on"
+    },
+    {
+      "name": "nogo_enabled",
+      "type": "boolean",
+      "doc": "whether the robot was told to respect no-go zones or not"
+    }
+  ]
+}

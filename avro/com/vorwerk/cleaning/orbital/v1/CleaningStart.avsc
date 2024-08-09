@@ -1,0 +1,75 @@
+{
+  "namespace": "com.vorwerk.cleaning.orbital.v1",
+  "type": "record",
+  "name": "CleaningStart",
+  "doc": "Cleaning Start event received from a robot",
+  "fields": [
+     {
+            "name": "started_by",
+            "type": "string",
+            "doc": "how was the cleaning run triggered"
+          },
+          {
+            "name": "runs",
+            "doc": "the cleaning runs in this map",
+            "type": {
+              "type": "array",
+              "items": {
+                "name": "run",
+                "namespace": "com.vorwerk.cleaning.orbital.v1.cleaning_start",
+                "type": "record",
+                "fields": [
+                  {
+                    "name": "map",
+                    "type": "Map"
+                  },
+                  {
+                    "name": "settings",
+                    "type": "Settings"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "success",
+            "type": "boolean",
+            "doc": "whether the cleaning run was started successfully or not"
+          },
+          {
+            "name": "robot_id",
+            "type": "string",
+            "logicalType": "uuid",
+            "doc": "the robot ID, from Orbital"
+          },
+          {
+            "name": "user_id",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            ],
+            "doc": "the user ID, from Orbital"
+          },
+          {
+            "name": "serial",
+            "type": "string",
+            "doc": "the robot serial number"
+          },
+          {
+            "name": "firmware",
+            "type": [
+              "null",
+              "string"
+            ],
+            "doc": "the robot firmware at the time of event emission in Orbital"
+          },
+          {
+            "name": "robot_timestamp",
+            "type": "string",
+            "doc": "timestamp of event emission on the robot"
+          }
+        ]
+}

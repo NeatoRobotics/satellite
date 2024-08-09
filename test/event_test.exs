@@ -2,13 +2,15 @@ defmodule Satellite.EventTest do
   use ExUnit.Case
 
   alias Satellite.Event
+  alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
 
   describe "new/1" do
     test "it has default values" do
-      event = Event.new(%{type: "test", payload: %{a: 1}})
+      event = Event.new(%V1.RobotNotification{message: "hello"})
 
       assert event.timestamp
-      assert %Event{origin: "satellite", version: 1, type: "test", payload: %{a: 1}} = event
+      assert %V1.Event{origin: "satellite", payload: %{message: "hello"}} = event
+      assert {:ok, %{"payload" => %{"message" => "hello"}}} = V1.Event.to_avro(event)
     end
 
     test "it can override default values" do

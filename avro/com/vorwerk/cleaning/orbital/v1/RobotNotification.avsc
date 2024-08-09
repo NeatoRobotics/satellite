@@ -1,0 +1,13 @@
+{
+  "namespace": "com.vorwerk.cleaning.orbital.v1",
+  "type": "record",
+  "name": "RobotNotification",
+  "doc": "Notifications received from the robot.",
+  "fields": [
+    {
+      "name": "message",
+      "type": ["null", "string"],
+      "doc": "the notification"
+    }
+  ]
+}
