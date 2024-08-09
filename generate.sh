@@ -10,10 +10,10 @@ rm -rf lib/satellite/com
 
 echo "Generating Elixir code..."
 #  Generate all avro converted files with elixir_avro
-mix elixir_avro_codegen --schemas-path avro/ --target-path lib/ --prefix Satellite
+mix elixir_avro_codegen --schemas-path priv/schemas --target-path lib/ --prefix Satellite
 
 #  Generate all avro converted files with avro by containing folder, can be useful for debugging
-#for dir in $(find ${DIR}/avro/ -name '*.avsc' -print0 | xargs -0 -n1 dirname | sort | uniq); do
+#for dir in $(find ${DIR}/priv/schemas/ -name '*.avsc' -print0 | xargs -0 -n1 dirname | sort | uniq); do
 #  files=$(find "${dir}" -name '*.avsc')
 #
 #  echo "dir: ${dir}"
