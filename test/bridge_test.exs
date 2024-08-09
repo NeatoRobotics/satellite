@@ -5,6 +5,7 @@ defmodule Satellite.BridgeTest do
   alias Satellite.Bridge
   alias Satellite.Handler
   alias Satellite.Event
+  alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
 
   import Mock
 
@@ -27,7 +28,7 @@ defmodule Satellite.BridgeTest do
           send(me, {:message, data})
           {:ok, :ok}
         end do
-        event1 = %Event{type: "foo", origin: "robot", payload: %{a: 1}}
+        event1 = Event.new(%V1.RobotNotification{message: "hello"}, %{origin: "robot"})
         Handler.Redis.send(event1)
 
         assert_receive {:message, data}

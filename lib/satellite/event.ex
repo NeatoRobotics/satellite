@@ -2,6 +2,8 @@ defmodule Satellite.Event do
   @derive Jason.Encoder
   defstruct [:id, :origin, :timestamp, :version, :type, :payload]
 
+  alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
+
   # TODO make validation for this
   @type t :: %__MODULE__{
           id: Ecto.UUID.t(),
@@ -24,5 +26,11 @@ defmodule Satellite.Event do
       timestamp: timestamp,
       payload: payload
     }
+  end
+
+  def encode(%V1.Event{} = event) do
+    {:ok, avro_event} = V1.Event.to_avro(event)
+    avro_event
+    |> Avrora.encode(schema_name: "com.vorwerk.cleaning.orbital.v1.Event")
   end
 end

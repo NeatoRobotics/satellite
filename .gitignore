@@ -27,7 +27,4 @@ satellite-*.tar
 
 .idea
 
-# Dialyzer plt files
-/priv/
-
 *.iml

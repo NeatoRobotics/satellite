@@ -4,19 +4,22 @@ defmodule Satellite.Handler.Redis do
   require Logger
 
   alias Satellite.Event
+  alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
 
   # FIXME: Why is the option called :redix_process instead of :name?? How is this working at all?
   @impl true
-  def send(%Event{type: type, origin: origin} = event, opts \\ [redix_process: redix_process()]) do
+  def send(%V1.Event{origin: origin} = event, opts \\ [redix_process: redix_process()]) do
+    type = event.payload.__struct__
+
     Logger.info("sending event to channel #{origin}:#{type}", event: event)
 
     channel = "#{origin}:#{type}"
 
-    publish(event, channel, opts)
+    publish(V1.Event.to_avro(event), channel, opts)
   end
 
-  defp publish(event, channel, redix_process: redix_process) do
-    case Redix.command(redix_process, ["PUBLISH", channel, Jason.encode!(event)]) do
+  defp publish(avro_event, channel, redix_process: redix_process) do
+    case Redix.command(redix_process, ["PUBLISH", channel, Jason.encode!(avro_event)]) do
       {:ok, _} ->
         :ok
 
