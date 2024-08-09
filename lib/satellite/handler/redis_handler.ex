@@ -15,8 +15,8 @@ defmodule Satellite.Handler.Redis do
     publish(event, channel, opts)
   end
 
-  defp publish(event, channel, redix_process: redix_process) do
-    case Redix.command(redix_process, ["PUBLISH", channel, Jason.encode!(event)]) do
+  def publish(event, channel, opts \\ [redix_process: redix_process()]) do
+    case Redix.command(opts[:redix_process], ["PUBLISH", channel, Jason.encode!(event)]) do
       {:ok, _} ->
         :ok
 
@@ -38,10 +38,6 @@ defmodule Satellite.Handler.Redis do
     end
   end
 
-  defp publish(event, channel, _opts) do
-    publish(event, channel, redix_process: redix_process())
-  end
-
   def child_spec(opts) do
     name = opts[:name] || :satellite_redix
     redix_opts = opts[:connection] ++ [name: name]
@@ -49,7 +45,7 @@ defmodule Satellite.Handler.Redis do
     %{id: __MODULE__, start: {Redix, :start_link, [redix_opts]}}
   end
 
-  defp redix_process do
+  def redix_process do
     {_, handler_opts} = Application.get_env(:satellite, :handler)
 
     handler_opts[:name] || :satellite_redix

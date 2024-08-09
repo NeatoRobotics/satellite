@@ -14,7 +14,8 @@ defmodule Satellite.Application do
   def children() do
     [
       child_specs(Application.get_env(:satellite, :handler)),
-      child_specs({Satellite.Bridge, []})
+      child_specs({Satellite.Bridge, []}),
+      child_specs({Satellite.Sync, []})
     ]
     |> List.flatten()
     |> Enum.reject(&is_nil/1)
