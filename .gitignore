@@ -28,3 +28,8 @@ satellite-*.tar
 .idea
 
 *.iml
+
+# dialyzer ignores
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
+

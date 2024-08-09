@@ -3,6 +3,9 @@ defmodule Satellite.Event do
   defstruct [:id, :origin, :timestamp, :version, :type, :payload]
 
   alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
+  alias Satellite.Avro.Client
+
+  use OK.Pipe
 
   # TODO make validation for this
   @type t :: %__MODULE__{
@@ -28,9 +31,16 @@ defmodule Satellite.Event do
     }
   end
 
+  @spec encode(V1.Event.t()) :: {:ok, binary()} | {:error, term()}
   def encode(%V1.Event{} = event) do
-    {:ok, avro_event} = V1.Event.to_avro(event)
-    avro_event
-    |> Avrora.encode(schema_name: "com.vorwerk.cleaning.orbital.v1.Event")
+    V1.Event.to_avro(event)
+    ~>> Client.encode(schema_name: "com.vorwerk.cleaning.orbital.v1.Event")
+  end
+
+  @spec decode(binary()) :: {:ok, V1.Event.t()} | {:error, term()}
+  def decode(data) do
+    {:ok, [decoded]} = Client.decode(data)
+
+    V1.Event.from_avro(decoded)
   end
 end
