@@ -47,7 +47,7 @@ defmodule Satellite.EventTest do
       assert event == decoded_event
     end
 
-    test "it encodes the event" do
+    test "it encodes a charge state event" do
       datetime =
         DateTime.new!(~D[2016-05-24], ~T[13:26:08.003], "Etc/UTC") |> DateTime.to_iso8601()
 
