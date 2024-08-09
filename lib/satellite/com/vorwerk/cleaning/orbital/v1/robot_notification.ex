@@ -17,7 +17,7 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotNotification do
   @expected_keys MapSet.new(["message"])
 
   typedstruct do
-    field :message, nil | String.t(), enforce: false
+    field(:message, nil | String.t(), enforce: false)
   end
 
   @module_prefix Satellite

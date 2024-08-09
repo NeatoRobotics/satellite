@@ -18,10 +18,11 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Run do
   @expected_keys MapSet.new(["map", "settings"])
 
   typedstruct do
-    field :map, Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Map.t(), enforce: true
+    field(:map, Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Map.t(), enforce: true)
 
-    field :settings, Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Settings.t(),
+    field(:settings, Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Settings.t(),
       enforce: true
+    )
   end
 
   @module_prefix Satellite

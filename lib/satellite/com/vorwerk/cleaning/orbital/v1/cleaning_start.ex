@@ -33,14 +33,14 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart do
                  ])
 
   typedstruct do
-    field :started_by, String.t(), enforce: true
-    field :runs, [Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Run.t()], enforce: true
-    field :success, boolean(), enforce: true
-    field :robot_id, String.t(), enforce: true
-    field :user_id, nil | String.t(), enforce: false
-    field :serial, String.t(), enforce: true
-    field :firmware, nil | String.t(), enforce: false
-    field :robot_timestamp, String.t(), enforce: true
+    field(:started_by, String.t(), enforce: true)
+    field(:runs, [Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Run.t()], enforce: true)
+    field(:success, boolean(), enforce: true)
+    field(:robot_id, String.t(), enforce: true)
+    field(:user_id, nil | String.t(), enforce: false)
+    field(:serial, String.t(), enforce: true)
+    field(:firmware, nil | String.t(), enforce: false)
+    field(:robot_timestamp, String.t(), enforce: true)
   end
 
   @module_prefix Satellite

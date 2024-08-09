@@ -31,13 +31,13 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotError do
                  ])
 
   typedstruct do
-    field :code, String.t(), enforce: true
-    field :severity, String.t(), enforce: true
-    field :robot_id, String.t(), enforce: true
-    field :user_id, nil | String.t(), enforce: false
-    field :serial, String.t(), enforce: true
-    field :firmware, nil | String.t(), enforce: false
-    field :robot_timestamp, String.t(), enforce: true
+    field(:code, String.t(), enforce: true)
+    field(:severity, String.t(), enforce: true)
+    field(:robot_id, String.t(), enforce: true)
+    field(:user_id, nil | String.t(), enforce: false)
+    field(:serial, String.t(), enforce: true)
+    field(:firmware, nil | String.t(), enforce: false)
+    field(:robot_timestamp, String.t(), enforce: true)
   end
 
   @module_prefix Satellite

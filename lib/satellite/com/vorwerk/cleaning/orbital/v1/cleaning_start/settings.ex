@@ -18,8 +18,8 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Settings do
   @expected_keys MapSet.new(["navigation_mode", "mode"])
 
   typedstruct do
-    field :navigation_mode, String.t(), enforce: true
-    field :mode, String.t(), enforce: true
+    field(:navigation_mode, String.t(), enforce: true)
+    field(:mode, String.t(), enforce: true)
   end
 
   @module_prefix Satellite

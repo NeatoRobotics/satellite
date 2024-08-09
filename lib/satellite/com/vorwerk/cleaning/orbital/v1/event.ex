@@ -20,18 +20,20 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.Event do
   @expected_keys MapSet.new(["id", "origin", "timestamp", "payload"])
 
   typedstruct do
-    field :id, String.t(), enforce: true
-    field :origin, String.t(), enforce: true
-    field :timestamp, String.t(), enforce: true
+    field(:id, String.t(), enforce: true)
+    field(:origin, String.t(), enforce: true)
+    field(:timestamp, String.t(), enforce: true)
 
-    field :payload,
-          Satellite.Com.Vorwerk.Cleaning.Orbital.V1.ChargeState.t()
-          | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningEnd.t()
-          | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.t()
-          | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.DockingState.t()
-          | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotError.t()
-          | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotNotification.t(),
-          enforce: false
+    field(
+      :payload,
+      Satellite.Com.Vorwerk.Cleaning.Orbital.V1.ChargeState.t()
+      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningEnd.t()
+      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.t()
+      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.DockingState.t()
+      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotError.t()
+      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotNotification.t(),
+      enforce: false
+    )
   end
 
   @module_prefix Satellite
@@ -78,9 +80,18 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.Event do
   def from_avro(%{"id" => id, "origin" => origin, "timestamp" => timestamp, "payload" => payload}) do
     {:ok,
      %__MODULE__{
-       id: Decoder.decode_value!(id, %ElixirAvro.AvroType.Primitive{name: "string", custom_props: []}, @module_prefix),
+       id:
+         Decoder.decode_value!(
+           id,
+           %ElixirAvro.AvroType.Primitive{name: "string", custom_props: []},
+           @module_prefix
+         ),
        origin:
-         Decoder.decode_value!(origin, %ElixirAvro.AvroType.Primitive{name: "string", custom_props: []}, @module_prefix),
+         Decoder.decode_value!(
+           origin,
+           %ElixirAvro.AvroType.Primitive{name: "string", custom_props: []},
+           @module_prefix
+         ),
        timestamp:
          Decoder.decode_value!(
            timestamp,

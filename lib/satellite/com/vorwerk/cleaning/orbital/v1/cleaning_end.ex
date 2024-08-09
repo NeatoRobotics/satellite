@@ -21,11 +21,11 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningEnd do
   @expected_keys MapSet.new(["robot_id", "user_id", "serial", "firmware", "robot_timestamp"])
 
   typedstruct do
-    field :robot_id, String.t(), enforce: true
-    field :user_id, nil | String.t(), enforce: false
-    field :serial, String.t(), enforce: true
-    field :firmware, nil | String.t(), enforce: false
-    field :robot_timestamp, String.t(), enforce: true
+    field(:robot_id, String.t(), enforce: true)
+    field(:user_id, nil | String.t(), enforce: false)
+    field(:serial, String.t(), enforce: true)
+    field(:firmware, nil | String.t(), enforce: false)
+    field(:robot_timestamp, String.t(), enforce: true)
   end
 
   @module_prefix Satellite

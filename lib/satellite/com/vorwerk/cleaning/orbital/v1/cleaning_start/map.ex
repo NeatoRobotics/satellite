@@ -19,9 +19,9 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Map do
   @expected_keys MapSet.new(["floorplan_uuid", "zone_uuid", "nogo_enabled"])
 
   typedstruct do
-    field :floorplan_uuid, nil | String.t(), enforce: false
-    field :zone_uuid, nil | String.t(), enforce: false
-    field :nogo_enabled, boolean(), enforce: true
+    field(:floorplan_uuid, nil | String.t(), enforce: false)
+    field(:zone_uuid, nil | String.t(), enforce: false)
+    field(:nogo_enabled, boolean(), enforce: true)
   end
 
   @module_prefix Satellite
