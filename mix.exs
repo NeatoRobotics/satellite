@@ -50,7 +50,7 @@ defmodule Satellite.MixProject do
       {:typed_struct, "~> 0.3.0"},
       {:elixir_avro, "~> 0.1.0"},
       {:avrora, "~> 0.28.0"},
-      { :uuid, "~> 1.1" }
+      {:uuid, "~> 1.1"}
     ]
   end
 end

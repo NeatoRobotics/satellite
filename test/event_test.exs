@@ -17,21 +17,20 @@ defmodule Satellite.EventTest do
       datetime = DateTime.new!(~D[2016-05-24], ~T[13:26:08.003], "Etc/UTC")
 
       event =
-        Event.new(%{
+        Event.new(%V1.RobotNotification{message: "hello"}, %{
           timestamp: datetime,
-          origin: "bar",
-          version: 2,
-          type: "test",
-          payload: %{a: 1}
+          origin: "bar"
         })
 
-      assert %Event{
+      assert %V1.Event{
                origin: "bar",
-               timestamp: ^datetime,
-               version: 2,
-               type: "test",
-               payload: %{a: 1}
+               timestamp: datetime,
+               payload: %V1.RobotNotification{message: "hello"}
              } = event
+
+      assert {:ok,
+              %{"origin" => "bar", "timestamp" => ^datetime, "payload" => %{"message" => "hello"}}} =
+               V1.Event.to_avro(event)
     end
   end
 end

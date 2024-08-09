@@ -73,3 +73,9 @@ config :satellite,
     Supervisor.start_link(children, opts)
   end
 ```
+
+## Generate new event code from avro
+
+```bash
+sh generate.sh
+```
