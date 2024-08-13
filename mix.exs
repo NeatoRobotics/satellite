@@ -4,7 +4,7 @@ defmodule Satellite.MixProject do
   def project do
     [
       app: :satellite,
-      version: "1.0.3",
+      version: "1.0.4",
       elixir: "~> 1.14",
       dialyzer: dialyzer(),
       start_permanent: Mix.env() == :prod,
@@ -47,7 +47,8 @@ defmodule Satellite.MixProject do
       {:ok, "~> 2.3"},
       {:mock, "~> 0.3.0", only: :test},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:logfmt_ex, github: "NeatoRobotics/logfmt_ex", tag: "v0.4.2-fix"}
+      {:logfmt_ex, github: "NeatoRobotics/logfmt_ex", tag: "v0.4.2-fix"},
+      {:avrora, "~> 0.28.0"}
     ]
   end
 end

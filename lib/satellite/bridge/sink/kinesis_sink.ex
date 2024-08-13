@@ -4,10 +4,13 @@ defmodule Satellite.Bridge.Sink.Kinesis do
   require Logger
 
   @impl true
-  def send(broadway_messages,
-        kinesis_role_arn: kinesis_role_arn,
-        kinesis_stream_name: stream_name,
-        assume_role_region: assume_role_region
+  def send(
+        broadway_messages,
+        %{
+          kinesis_role_arn: kinesis_role_arn,
+          kinesis_stream_name: stream_name,
+          assume_role_region: assume_role_region
+        }
       )
       when is_list(broadway_messages) do
     Logger.info("#{__MODULE__} sending a batch of events to Amazon Kinesis")

@@ -10,11 +10,11 @@ defmodule Satellite.Bridge.Sink.KinesisTest do
     setup do
       message = %Broadway.Message{acknowledger: nil, data: Jason.encode!(2)}
 
-      sink_opts = [
+      sink_opts = %{
         kinesis_role_arn: UUID.generate(),
         kinesis_stream_name: "test_stream",
         assume_role_region: "eu-west-1"
-      ]
+      }
 
       %{message: message, sink_opts: sink_opts}
     end

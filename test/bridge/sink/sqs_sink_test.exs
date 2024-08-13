@@ -9,7 +9,7 @@ defmodule Satellite.Bridge.Sink.SQSTest do
     setup do
       message = %Broadway.Message{acknowledger: nil, data: %{a: 2}}
 
-      sink_opts = [
+      sink_opts = %{
         aws_config: [
           :sqs,
           region: "eu-central-1",
@@ -21,7 +21,7 @@ defmodule Satellite.Bridge.Sink.SQSTest do
           }
         ],
         queue_url: "foo_url"
-      ]
+      }
 
       %{message: message, sink_opts: sink_opts}
     end

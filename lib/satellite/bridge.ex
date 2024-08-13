@@ -26,10 +26,20 @@ defmodule Satellite.Bridge do
         Only the following sinks are supported: #{Enum.map(@allowed_sink_list, &(" " <> inspect(&1)))}
         """)
 
+    avro_client = Application.get_env(:satellite, :avro_client)
+
+    if !avro_client and (sink_opts[:format] == :avro || source_opts[:format] == :avro),
+      do:
+        raise(ArgumentError, """
+        if `format` is avro for sink and/or source, an `avro_client` must be provided and instantiated.
+        """)
+
     Broadway.start_link(__MODULE__,
       name: __MODULE__,
       context: %{
-        sink: {sink, sink_opts}
+        avro_client: avro_client,
+        sink: %{module: sink, opts: sink_opts |> Enum.into(%{})},
+        source: %{module: source, opts: source_opts |> Enum.into(%{})}
       },
       producer: [
         module: {source, source_opts},
@@ -47,12 +57,12 @@ defmodule Satellite.Bridge do
   end
 
   @impl true
-  def handle_message(_processor_name, message, _context) do
+  def handle_message(_processor_name, message, context) do
     message_str = "#{inspect(message)}"
 
     Logger.info("#{__MODULE__} handling message", event: message_str)
 
-    case process_data(message.data, __MODULE__.services()) do
+    case process_data(message.data, __MODULE__.services(), context) do
       {:ok, %{data: data, metadata: metadata}} ->
         %{message | data: data, metadata: metadata}
 
@@ -66,21 +76,21 @@ defmodule Satellite.Bridge do
     end
   end
 
-  @spec process_data(term(), [any]) :: {:ok, map()} | {:error, term()}
-  def process_data(data, services) do
-    Jason.decode(data)
+  @spec process_data(term(), [any], map()) :: {:ok, map()} | {:error, term()}
+  def process_data(data, services, context) do
+    decode_data(data, context)
     |> OK.flat_map(fn data ->
       Enum.reduce(services, {:ok, %{data: data, metadata: %{}}}, fn service, acc ->
         acc
         ~>> apply_service(service)
         ~> merge_metadata(acc)
       end)
-      ~>> encode_data()
+      ~>> encode_data(context)
     end)
   end
 
   @impl true
-  def handle_batch(_default, msgs, _, %{sink: {sink, opts}}) do
+  def handle_batch(_default, msgs, _, %{sink: %{module: sink, opts: opts}}) do
     Logger.info("#{__MODULE__}.handle_batch/3 called with #{length(msgs)} message(s)")
 
     sink.send(msgs, opts)
@@ -143,9 +153,39 @@ defmodule Satellite.Bridge do
     end
   end
 
-  @spec encode_data(map()) :: {:ok, map()} | {:error, term()}
-  defp encode_data(%{data: data, metadata: metadata}) do
+  @spec decode_data(String.t(), map()) :: {:ok, map()} | {:error, term()}
+  defp decode_data(data, %{source: %{opts: %{format: :json}}}) do
+    Jason.decode(data)
+  end
+
+  defp decode_data(data, %{avro_client: client, source: %{opts: %{format: :avro}}}) do
+    # FIXME: seems like ocf format wraps the event in a list, for some reason,
+    # so we either unwrap it (and we are assuming ofc format here..)
+    # or we figure out a cleaner and more clever way of guessing the schemas
+    # or we just go with plain format
+    client.decode(data)
+    |> case do
+      {:ok, [decoded_event]} ->
+        {:ok, decoded_event}
+
+      any ->
+        any
+    end
+  end
+
+  @spec encode_data(map(), map()) :: {:ok, map()} | {:error, term()}
+  defp encode_data(%{data: data, metadata: metadata}, %{sink: %{opts: %{format: :json}}}) do
     Jason.encode(data)
+    |> OK.map(fn encoded_data ->
+      %{data: encoded_data, metadata: metadata}
+    end)
+  end
+
+  defp encode_data(%{data: data, metadata: %{schema_name: schema_name} = metadata}, %{
+         avro_client: client,
+         sink: %{opts: %{format: :avro}}
+       }) do
+    client.encode(data, schema_name: schema_name)
     |> OK.map(fn encoded_data ->
       %{data: encoded_data, metadata: metadata}
     end)

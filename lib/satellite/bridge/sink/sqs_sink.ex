@@ -4,7 +4,7 @@ defmodule Satellite.Bridge.Sink.SQS do
   require Logger
 
   @impl true
-  def send(broadway_messages, aws_config: aws_config, queue_url: queue_url)
+  def send(broadway_messages, %{aws_config: aws_config, queue_url: queue_url})
       when is_list(broadway_messages) do
     Logger.info("#{__MODULE__} sending a batch of events to Amazon SQS queue",
       aws_config: aws_config,
