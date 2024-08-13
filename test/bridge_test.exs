@@ -8,6 +8,12 @@ defmodule Satellite.BridgeTest do
 
   import Mock
 
+  setup_all do
+    context = %{sink: %{opts: %{format: :json}}, source: %{opts: %{format: :json}}}
+
+    %{context: context}
+  end
+
   describe "Bridge" do
     test "source to sink" do
       me = self()
@@ -38,51 +44,52 @@ defmodule Satellite.BridgeTest do
     end
   end
 
-  describe "process_data/1" do
-    test "with happy path" do
+  describe "process_data/3" do
+    test "with happy path", %{context: context} do
       data = 2 |> Jason.encode!()
 
-      assert Bridge.process_data(data, [Double, Double, Double]) ==
+      assert Bridge.process_data(data, [Double, Double, Double], context) ==
                {:ok, %{data: "16", metadata: %{}}}
     end
 
-    test "with happy path and metadata" do
+    test "with happy path and metadata", %{context: context} do
       data = Jason.encode!(5)
 
-      assert Bridge.process_data(data, [DoubleWithMetadata, Double, Double]) ==
+      assert Bridge.process_data(data, [DoubleWithMetadata, Double, Double], context) ==
                {:ok, %{data: "40", metadata: %{foo: 5}}}
     end
 
-    test "data not decodable" do
+    test "data not decodable", %{context: context} do
       data = "{2: AAAA}"
 
       assert {:error, %Jason.DecodeError{position: 1, token: nil, data: "{2: AAAA}"}} =
-               Bridge.process_data(data, [Double, Double])
+               Bridge.process_data(data, [Double, Double], context)
     end
 
-    test "with failed path" do
+    test "with failed path", %{context: context} do
       data = 2 |> Jason.encode!()
 
-      assert Bridge.process_data(data, [Double, Fail, Double]) == {:error, :service_error}
+      assert Bridge.process_data(data, [Double, Fail, Double], context) ==
+               {:error, :service_error}
     end
 
-    test "metadata get's merged" do
+    test "metadata get's merged", %{context: context} do
       data = Jason.encode!(5)
 
-      assert Bridge.process_data(data, [Double, DoubleWithMetadata, Double]) ==
+      assert Bridge.process_data(data, [Double, DoubleWithMetadata, Double], context) ==
                {:ok, %{data: "40", metadata: %{foo: 10}}}
 
-      assert Bridge.process_data(data, [Double, Double, DoubleWithMetadata]) ==
+      assert Bridge.process_data(data, [Double, Double, DoubleWithMetadata], context) ==
                {:ok, %{data: "40", metadata: %{foo: 20}}}
 
-      assert Bridge.process_data(data, [Double, DoubleWithMetadata, TripleWithMetadata]) ==
+      assert Bridge.process_data(data, [Double, DoubleWithMetadata, TripleWithMetadata], context) ==
                {:ok, %{data: "60", metadata: %{foo: 10, bar: 20}}}
     end
 
-    test "with mixed keys" do
+    test "with mixed keys", %{context: context} do
       event = %{"foo" => "bar"} |> Jason.encode!()
 
-      assert Bridge.process_data(event, [IdentityProcessor]) ==
+      assert Bridge.process_data(event, [IdentityProcessor], context) ==
                {:ok, %{data: event, metadata: %{}}}
     end
   end
@@ -94,29 +101,34 @@ defmodule Satellite.BridgeTest do
       %{message: message}
     end
 
-    test "it updates the message data if processing is correct", %{message: message} do
+    test "it updates the message data if processing is correct", %{
+      message: message,
+      context: context
+    } do
       with_mock Bridge, [:passthrough], services: fn -> [Double, Double, Double] end do
-        message = Bridge.handle_message(nil, message, nil)
+        message = Bridge.handle_message(nil, message, context)
 
         assert message.data == "16"
         assert message.status == :ok
       end
     end
 
-    test "it fails the message if processing is incorrect", %{message: message} do
+    test "it fails the message if processing is incorrect", %{message: message, context: context} do
       with_mock Bridge, [:passthrough], services: fn -> [Double, Fail, Double] end do
-        message = Bridge.handle_message(nil, message, nil)
+        message = Bridge.handle_message(nil, message, context)
 
         assert message.data == "2"
         assert message.status == {:failed, :service_error}
       end
     end
 
-    test "it fails the message if processing is incorrect because of non-decodable message" do
+    test "it fails the message if processing is incorrect because of non-decodable message", %{
+      context: context
+    } do
       with_mock Bridge, [:passthrough], services: fn -> [Double, Fail, Double] end do
         message = %Broadway.Message{acknowledger: nil, data: "{2: AAAA}"}
 
-        message = Bridge.handle_message(nil, message, nil)
+        message = Bridge.handle_message(nil, message, context)
 
         assert message == %Broadway.Message{
                  data: "{2: AAAA}",
