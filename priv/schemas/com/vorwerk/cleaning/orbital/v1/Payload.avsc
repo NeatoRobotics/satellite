@@ -1,0 +1,16 @@
+{
+  "namespace": "com.vorwerk.cleaning.orbital.v1",
+  "type": "record",
+  "name": "Payload",
+  "doc": "Any payload received by Orbital",
+  "fields": [
+    {
+      "name": "content",
+      "type": {
+        "type": "map",
+        "values": ["null", "string", "long", "boolean", "Payload"],
+        "default": "null"
+      }
+    }
+  ]
+}

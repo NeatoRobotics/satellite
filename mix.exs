@@ -47,8 +47,9 @@ defmodule Satellite.MixProject do
       {:mock, "~> 0.3.0", only: :test},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:logfmt_ex, github: "NeatoRobotics/logfmt_ex", tag: "v0.4.2-fix"},
+      {:elixir_avro, github: "NeatoRobotics/elixir-avro", branch: "fix/union-types-to_avro"},
+      # {:elixir_avro, "~> 0.1.0"},
       {:typed_struct, "~> 0.3.0"},
-      {:elixir_avro, "~> 0.1.0"},
       {:avrora, "~> 0.28.0"},
       {:uuid, "~> 1.1"}
     ]

@@ -105,6 +105,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.ChargeState do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{
         "charge" => charge,
         "is_charging" => is_charging,

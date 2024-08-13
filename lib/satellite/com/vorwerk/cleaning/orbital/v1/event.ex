@@ -31,7 +31,8 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.Event do
       | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.t()
       | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.DockingState.t()
       | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotError.t()
-      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotNotification.t(),
+      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotNotification.t()
+      | Satellite.Com.Vorwerk.Cleaning.Orbital.V1.Payload.t(),
       enforce: false
     )
   end
@@ -69,12 +70,17 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.Event do
                2 => "com.vorwerk.cleaning.orbital.v1.CleaningStart",
                3 => "com.vorwerk.cleaning.orbital.v1.DockingState",
                4 => "com.vorwerk.cleaning.orbital.v1.RobotError",
-               5 => "com.vorwerk.cleaning.orbital.v1.RobotNotification"
+               5 => "com.vorwerk.cleaning.orbital.v1.RobotNotification",
+               6 => "com.vorwerk.cleaning.orbital.v1.Payload"
              }
            },
            @module_prefix
          )
      }}
+  end
+
+  def to_avro(_) do
+    {:error, :not_supported}
   end
 
   def from_avro(%{"id" => id, "origin" => origin, "timestamp" => timestamp, "payload" => payload}) do
@@ -108,7 +114,8 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.Event do
                2 => "com.vorwerk.cleaning.orbital.v1.CleaningStart",
                3 => "com.vorwerk.cleaning.orbital.v1.DockingState",
                4 => "com.vorwerk.cleaning.orbital.v1.RobotError",
-               5 => "com.vorwerk.cleaning.orbital.v1.RobotNotification"
+               5 => "com.vorwerk.cleaning.orbital.v1.RobotNotification",
+               6 => "com.vorwerk.cleaning.orbital.v1.Payload"
              }
            },
            @module_prefix

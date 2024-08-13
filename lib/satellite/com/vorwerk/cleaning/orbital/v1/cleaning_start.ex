@@ -117,6 +117,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{
         "started_by" => started_by,
         "runs" => runs,

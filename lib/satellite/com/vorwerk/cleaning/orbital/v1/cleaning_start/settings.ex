@@ -42,6 +42,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Settings do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{"navigation_mode" => navigation_mode, "mode" => mode}) do
     {:ok,
      %__MODULE__{

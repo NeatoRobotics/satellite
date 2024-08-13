@@ -1,6 +1,4 @@
 defmodule Satellite do
-  alias Satellite.Event
-
   @behaviour Satellite.Behaviour
 
   @impl true

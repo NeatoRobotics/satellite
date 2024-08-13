@@ -3,6 +3,7 @@ defmodule Satellite.Bridge do
   use OK.Pipe
 
   alias Broadway.Message
+  alias Satellite.Event
 
   # FIXME: Maybe we should take it out to let the apps that use Satellite to define their own sinks
   @allowed_sink_list [
@@ -68,7 +69,7 @@ defmodule Satellite.Bridge do
 
   @spec process_data(term(), [any]) :: {:ok, map()} | {:error, term()}
   def process_data(data, services) do
-    Jason.decode(data)
+    Event.decode(data)
     |> OK.flat_map(fn data ->
       Enum.reduce(services, {:ok, %{data: data, metadata: %{}}}, fn service, acc ->
         acc
@@ -145,7 +146,7 @@ defmodule Satellite.Bridge do
 
   @spec encode_data(map()) :: {:ok, map()} | {:error, term()}
   defp encode_data(%{data: data, metadata: metadata}) do
-    Jason.encode(data)
+    Event.encode(data)
     |> OK.map(fn encoded_data ->
       %{data: encoded_data, metadata: metadata}
     end)

@@ -3,5 +3,7 @@ defmodule Satellite.Behaviour do
   A behaviour to implement event sending.
   """
 
-  @callback send(Satellite.Event.t()) :: :ok | {:error, term()}
+  alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
+  
+  @callback send(V1.Event.t()) :: :ok | {:error, term()}
 end

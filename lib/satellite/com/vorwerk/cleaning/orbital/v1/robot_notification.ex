@@ -39,6 +39,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.RobotNotification do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{"message" => message}) do
     {:ok,
      %__MODULE__{

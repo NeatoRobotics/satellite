@@ -70,6 +70,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Map do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{
         "floorplan_uuid" => floorplan_uuid,
         "zone_uuid" => zone_uuid,

@@ -28,7 +28,8 @@
         "CleaningStart",
         "DockingState",
         "RobotError",
-        "RobotNotification"
+        "RobotNotification",
+        "Payload"
       ]
     }
   ]

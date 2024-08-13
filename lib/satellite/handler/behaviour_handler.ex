@@ -5,7 +5,7 @@ defmodule Satellite.Handler.Behaviour do
   This module defines callbacks to normalize options and send event to any message queue system.
   """
 
-  alias Satellite.Event
+  alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
 
-  @callback send(Event.t(), opts :: Keyword.t()) :: :ok | {:error, term()}
+  @callback send(V1.Event.t(), opts :: Keyword.t()) :: :ok | {:error, term()}
 end

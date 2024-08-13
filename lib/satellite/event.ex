@@ -39,8 +39,12 @@ defmodule Satellite.Event do
 
   @spec decode(binary()) :: {:ok, V1.Event.t()} | {:error, term()}
   def decode(data) do
-    {:ok, [decoded]} = Client.decode(data)
+    case Client.decode(data) do
+      {:ok, [decoded]} ->
+        V1.Event.from_avro(decoded)
 
-    V1.Event.from_avro(decoded)
+      _ ->
+        {:error, :invalid_data}
+    end
   end
 end

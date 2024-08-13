@@ -105,6 +105,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.DockingState do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{
         "base_type" => base_type,
         "is_docking" => is_docking,

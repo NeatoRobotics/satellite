@@ -81,6 +81,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningEnd do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{
         "robot_id" => robot_id,
         "user_id" => user_id,

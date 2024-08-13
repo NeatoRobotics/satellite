@@ -9,17 +9,28 @@ defmodule Satellite.Handler.Redis do
   # FIXME: Why is the option called :redix_process instead of :name?? How is this working at all?
   @impl true
   def send(%V1.Event{origin: origin} = event, opts \\ [redix_process: redix_process()]) do
-    type = event.payload.__struct__
+    [_version | rest] =
+      event.payload.__struct__
+      |> Atom.to_string()
+      |> String.replace_leading("Elixir.Satellite.Com.Vorwerk.Cleaning.Orbital.", "")
+      |> String.split(".")
+
+    type =
+      rest
+      |> Enum.join("_")
+      |> Macro.underscore()
 
     Logger.info("sending event to channel #{origin}:#{type}", event: event)
 
     channel = "#{origin}:#{type}"
 
-    publish(V1.Event.to_avro(event), channel, opts)
+    publish(event, channel, opts)
   end
 
-  defp publish(avro_event, channel, redix_process: redix_process) do
-    case Redix.command(redix_process, ["PUBLISH", channel, Jason.encode!(avro_event)]) do
+  defp publish(%V1.Event{} = event, channel, redix_process: redix_process) do
+    {:ok, encoded} = Event.encode(event)
+
+    case Redix.command(redix_process, ["PUBLISH", channel, encoded]) do
       {:ok, _} ->
         :ok
 

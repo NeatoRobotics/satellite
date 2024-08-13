@@ -45,6 +45,10 @@ defmodule Satellite.Com.Vorwerk.Cleaning.Orbital.V1.CleaningStart.Run do
      }}
   end
 
+  def to_avro(_) do
+    {:error, :not_supported}
+  end
+
   def from_avro(%{"map" => map, "settings" => settings}) do
     {:ok,
      %__MODULE__{

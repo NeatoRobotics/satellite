@@ -8,6 +8,7 @@ defmodule Satellite.BridgeTest do
   alias Satellite.Com.Vorwerk.Cleaning.Orbital.V1
 
   import Mock
+  use OK.Pipe
 
   describe "Bridge" do
     test "source to sink" do
@@ -33,64 +34,88 @@ defmodule Satellite.BridgeTest do
 
         assert_receive {:message, data}
 
-        assert event1 |> Jason.encode!() |> Jason.decode!() ==
-                 data |> Base.decode64!() |> Jason.decode!()
+        {:ok, decoded} =
+          data
+          |> Base.decode64()
+          ~>> Event.decode()
+
+        assert event1 == decoded
       end
     end
   end
 
   describe "process_data/1" do
     test "with happy path" do
-      data = 2 |> Jason.encode!()
+      {:ok, event} = payload(2)
 
-      assert Bridge.process_data(data, [Double, Double, Double]) ==
-               {:ok, %{data: "16", metadata: %{}}}
+      assert {:ok, %{data: encoded_data, metadata: %{}}} =
+               Bridge.process_data(event, [Double, Double, Double])
+
+      {:ok, %V1.Event{payload: %V1.Payload{content: %{"a" => 16}}}} =
+        Event.decode(encoded_data)
     end
 
     test "with happy path and metadata" do
-      data = Jason.encode!(5)
+      {:ok, event} = payload(5)
 
-      assert Bridge.process_data(data, [DoubleWithMetadata, Double, Double]) ==
-               {:ok, %{data: "40", metadata: %{foo: 5}}}
+      assert {:ok, %{data: encoded_data, metadata: %{foo: 5}}} =
+               Bridge.process_data(event, [DoubleWithMetadata, Double, Double])
+
+      {:ok, %V1.Event{payload: %V1.Payload{content: %{"a" => 40}}}} =
+        Event.decode(encoded_data)
     end
 
     test "data not decodable" do
-      data = "{2: AAAA}"
+      data = "invalid avro data"
 
-      assert {:error, %Jason.DecodeError{position: 1, token: nil, data: "{2: AAAA}"}} =
-               Bridge.process_data(data, [Double, Double])
+      assert {:error, :invalid_data} == Bridge.process_data(data, [Double, Double])
     end
 
     test "with failed path" do
-      data = 2 |> Jason.encode!()
+      {:ok, event} = payload(2)
 
-      assert Bridge.process_data(data, [Double, Fail, Double]) == {:error, :service_error}
+      assert Bridge.process_data(event, [Double, Fail, Double]) == {:error, :service_error}
     end
 
     test "metadata get's merged" do
-      data = Jason.encode!(5)
+      {:ok, event} = payload(5)
 
-      assert Bridge.process_data(data, [Double, DoubleWithMetadata, Double]) ==
-               {:ok, %{data: "40", metadata: %{foo: 10}}}
+      assert {:ok, %{data: encoded_data, metadata: %{foo: 10}}} =
+               Bridge.process_data(event, [Double, DoubleWithMetadata, Double])
 
-      assert Bridge.process_data(data, [Double, Double, DoubleWithMetadata]) ==
-               {:ok, %{data: "40", metadata: %{foo: 20}}}
+      {:ok, %V1.Event{payload: %V1.Payload{content: %{"a" => 40}}}} =
+        Event.decode(encoded_data)
 
-      assert Bridge.process_data(data, [Double, DoubleWithMetadata, TripleWithMetadata]) ==
-               {:ok, %{data: "60", metadata: %{foo: 10, bar: 20}}}
+      assert {:ok, %{data: encoded_data, metadata: %{foo: 20}}} =
+               Bridge.process_data(event, [Double, Double, DoubleWithMetadata])
+
+      {:ok, %V1.Event{payload: %V1.Payload{content: %{"a" => 40}}}} =
+        Event.decode(encoded_data)
+
+      assert {:ok, %{data: encoded_data, metadata: %{foo: 10, bar: 20}}} =
+               Bridge.process_data(event, [Double, DoubleWithMetadata, TripleWithMetadata])
+
+      {:ok, %V1.Event{payload: %V1.Payload{content: %{"a" => 60}}}} =
+        Event.decode(encoded_data)
     end
 
     test "with mixed keys" do
-      event = %{"foo" => "bar"} |> Jason.encode!()
+      {:ok, event} =
+        Event.new(%V1.Payload{content: %{foo: "bar"}}, %{origin: "orbital"})
+        |> Event.encode()
 
-      assert Bridge.process_data(event, [IdentityProcessor]) ==
-               {:ok, %{data: event, metadata: %{}}}
+      assert {:ok, %{data: encoded_data, metadata: %{}}} =
+               Bridge.process_data(event, [IdentityProcessor])
+
+      {:ok, %V1.Event{payload: %V1.Payload{content: %{"foo" => "bar"}}}} =
+        Event.decode(encoded_data)
     end
   end
 
   describe "handle_message/3" do
     setup do
-      message = %Broadway.Message{acknowledger: nil, data: Jason.encode!(2)}
+      {:ok, data} = payload(2)
+      message = %Broadway.Message{acknowledger: nil, data: data}
 
       %{message: message}
     end
@@ -98,8 +123,8 @@ defmodule Satellite.BridgeTest do
     test "it updates the message data if processing is correct", %{message: message} do
       with_mock Bridge, [:passthrough], services: fn -> [Double, Double, Double] end do
         message = Bridge.handle_message(nil, message, nil)
+        {:ok, %V1.Event{payload: %V1.Payload{content: %{"a" => 16}}}} = Event.decode(message.data)
 
-        assert message.data == "16"
         assert message.status == :ok
       end
     end
@@ -108,7 +133,7 @@ defmodule Satellite.BridgeTest do
       with_mock Bridge, [:passthrough], services: fn -> [Double, Fail, Double] end do
         message = Bridge.handle_message(nil, message, nil)
 
-        assert message.data == "2"
+        {:ok, %V1.Event{payload: %V1.Payload{content: %{"a" => 2}}}} = Event.decode(message.data)
         assert message.status == {:failed, :service_error}
       end
     end
@@ -126,9 +151,14 @@ defmodule Satellite.BridgeTest do
                  batcher: :default,
                  batch_key: :default,
                  batch_mode: :bulk,
-                 status: {:failed, %Jason.DecodeError{position: 1, token: nil, data: "{2: AAAA}"}}
+                 status: {:failed, :invalid_data}
                }
       end
     end
+  end
+
+  def payload(x) do
+    Event.new(%V1.Payload{content: %{a: x}}, %{origin: "orbital"})
+    |> Event.encode()
   end
 end
