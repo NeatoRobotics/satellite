@@ -13,7 +13,7 @@ defmodule TripleWithMetadata do
 end
 
 defmodule IdentityProcessor do
-  def process(x), do: {:ok, x}
+  def process(x), do: {:ok, x, %{stream_name: "foo"}}
 end
 
 defmodule Fail do

@@ -8,12 +8,15 @@ defmodule Satellite.Bridge.Sink.Kinesis do
         broadway_messages,
         %{
           kinesis_role_arn: kinesis_role_arn,
-          kinesis_stream_name: stream_name,
           assume_role_region: assume_role_region
         }
       )
       when is_list(broadway_messages) do
-    Logger.info("#{__MODULE__} sending a batch of events to Amazon Kinesis")
+    stream_name =
+      (broadway_messages |> hd()).metadata.stream_name ||
+        raise "Kinesis stream ALWAYS needs a stream_name in the metadata"
+
+    Logger.info("#{__MODULE__} sending a batch of events to Amazon Kinesis stream #{stream_name}")
 
     records = Enum.map(broadway_messages, &%{data: &1.data, partition_key: Ecto.ULID.generate()})
 

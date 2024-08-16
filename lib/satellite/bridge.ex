@@ -62,7 +62,12 @@ defmodule Satellite.Bridge do
 
     Logger.info("#{__MODULE__} handling message", event: message_str)
 
+    # FIXME: review the clauses / batch mechanism completely
     case process_data(message.data, __MODULE__.services(), context) do
+      {:ok, %{data: data, metadata: %{event_type: event_type} = metadata}} ->
+        %{message | data: data, metadata: metadata}
+        |> Message.put_batch_key(event_type)
+
       {:ok, %{data: data, metadata: metadata}} ->
         %{message | data: data, metadata: metadata}
 
@@ -80,7 +85,18 @@ defmodule Satellite.Bridge do
   def process_data(data, services, context) do
     decode_data(data, context)
     |> OK.flat_map(fn data ->
-      Enum.reduce(services, {:ok, %{data: data, metadata: %{}}}, fn service, acc ->
+      # FIXME: do this better. We will only use Satellite Events so the decoding should perform
+      # validation and allow us to get the type straight away
+      type = get_event_type(data)
+
+      metadata =
+        if type do
+          %{event_type: type}
+        else
+          %{}
+        end
+
+      Enum.reduce(services, {:ok, %{data: data, metadata: metadata}}, fn service, acc ->
         acc
         ~>> apply_service(service)
         ~> merge_metadata(acc)
@@ -152,6 +168,16 @@ defmodule Satellite.Bridge do
         error
     end
   end
+
+  defp get_event_type(%{type: type}) do
+    type
+  end
+
+  defp get_event_type(%{"type" => type}) do
+    type
+  end
+
+  defp get_event_type(_), do: nil
 
   @spec decode_data(String.t(), map()) :: {:ok, map()} | {:error, term()}
   defp decode_data(data, %{source: %{opts: %{format: :json}}}) do

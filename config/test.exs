@@ -14,10 +14,7 @@ config :satellite,
     services: [IdentityProcessor],
     sink:
       {Satellite.Bridge.Sink.Kinesis,
-       kinesis_role_arn: 1,
-       kinesis_stream_name: "foo_stream",
-       assume_role_region: "eu-west-1",
-       format: :json},
+       kinesis_role_arn: 1, assume_role_region: "eu-west-1", format: :json},
     source:
       {Satellite.Bridge.Source.Redis,
        connection: [host: "127.0.0.1", port: 6379], channels: ["robot:*", "user:*"], format: :json},

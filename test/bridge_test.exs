@@ -90,7 +90,7 @@ defmodule Satellite.BridgeTest do
       event = %{"foo" => "bar"} |> Jason.encode!()
 
       assert Bridge.process_data(event, [IdentityProcessor], context) ==
-               {:ok, %{data: event, metadata: %{}}}
+               {:ok, %{data: event, metadata: %{stream_name: "foo"}}}
     end
   end
 
