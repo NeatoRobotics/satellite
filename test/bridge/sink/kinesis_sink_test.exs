@@ -8,11 +8,14 @@ defmodule Satellite.Bridge.Sink.KinesisTest do
 
   describe "send/2" do
     setup do
-      message = %Broadway.Message{acknowledger: nil, data: Jason.encode!(2)}
+      message = %Broadway.Message{
+        acknowledger: nil,
+        data: Jason.encode!(2),
+        metadata: %{stream_name: "foo"}
+      }
 
       sink_opts = %{
         kinesis_role_arn: UUID.generate(),
-        kinesis_stream_name: "test_stream",
         assume_role_region: "eu-west-1"
       }
 
