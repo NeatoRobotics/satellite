@@ -56,7 +56,7 @@ defmodule Satellite.Sync do
     {:noreply, nil}
   end
 
-  @spec send(Event.t()) :: {:ok, Event.t()} | {:error, term()}
+  @spec send(Event.t()) :: {:ok, term()} | {:error, term()}
   def send(event, timeout \\ 5_000) do
     SyncTask.async(event, channel(event), timeout)
     |> Task.yield()
