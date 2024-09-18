@@ -108,8 +108,9 @@ defmodule Satellite.Bridge do
   @impl true
   def handle_batch(_default, msgs, _, %{sink: %{module: sink, opts: opts}}) do
     Logger.info("#{__MODULE__}.handle_batch/3 called with #{length(msgs)} message(s)")
-
-    sink.send(msgs, opts)
+    msgs
+    |> Enum.reject(fn msg -> msg.metadata |> Map.get(:discard, false) end)
+    |> sink.send(opts)
 
     msgs
   end

@@ -8,6 +8,12 @@ defmodule Satellite.BridgeTest do
 
   import Mock
 
+  defmodule Discard do
+    def process(event) do
+      {:ok, event, %{discard: true}}
+    end
+  end
+
   setup_all do
     context = %{sink: %{opts: %{format: :json}}, source: %{opts: %{format: :json}}}
 
@@ -16,6 +22,23 @@ defmodule Satellite.BridgeTest do
 
   describe "Bridge" do
     test "source to sink" do
+      me = self()
+
+      with_mocks [
+        {ExAws, [:passthrough], request: fn _ -> {:ok, %{}} end},
+        {Bridge, [:passthrough],  services: fn -> [Discard]}
+      ] do
+        event1 = %Event{type: "foo", origin: "robot", payload: %{a: 1}}
+        Handler.Redis.send(event1)
+
+        assert_receive {:message, data}
+
+        assert event1 |> Jason.encode!() |> Jason.decode!() ==
+                 data |> Base.decode64!() |> Jason.decode!()
+      end
+    end
+
+    test "discards messages with discard: true metadata" do
       me = self()
 
       with_mock ExAws, [:passthrough],
