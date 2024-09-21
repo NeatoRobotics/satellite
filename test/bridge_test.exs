@@ -24,23 +24,6 @@ defmodule Satellite.BridgeTest do
     test "source to sink" do
       me = self()
 
-      with_mocks [
-        {ExAws, [:passthrough], request: fn _ -> {:ok, %{}} end},
-        {Bridge, [:passthrough],  services: fn -> [Discard]}
-      ] do
-        event1 = %Event{type: "foo", origin: "robot", payload: %{a: 1}}
-        Handler.Redis.send(event1)
-
-        assert_receive {:message, data}
-
-        assert event1 |> Jason.encode!() |> Jason.decode!() ==
-                 data |> Base.decode64!() |> Jason.decode!()
-      end
-    end
-
-    test "discards messages with discard: true metadata" do
-      me = self()
-
       with_mock ExAws, [:passthrough],
         request: fn
           %{params: %{"Action" => "AssumeRole"}} ->
@@ -56,15 +39,28 @@ defmodule Satellite.BridgeTest do
           send(me, {:message, data})
           {:ok, :ok}
         end do
+          event1 = %Event{type: "foo", origin: "robot", payload: %{a: 1}}
+          Handler.Redis.send(event1)
+
+          assert_receive {:message, data}
+
+          assert event1 |> Jason.encode!() |> Jason.decode!() ==
+            data |> Base.decode64!() |> Jason.decode!()
+        end
+    end
+    
+    test "discards messages with discard: true metadata" do
+      with_mocks [
+        {ExAws, [:passthrough], request: fn _ -> {:ok, %{}} end},
+        {Bridge, [:passthrough],  services: fn -> [Discard] end}
+      ] do
         event1 = %Event{type: "foo", origin: "robot", payload: %{a: 1}}
         Handler.Redis.send(event1)
 
-        assert_receive {:message, data}
-
-        assert event1 |> Jason.encode!() |> Jason.decode!() ==
-                 data |> Base.decode64!() |> Jason.decode!()
+        refute_receive {:message, _}
       end
     end
+
   end
 
   describe "process_data/3" do
@@ -72,48 +68,48 @@ defmodule Satellite.BridgeTest do
       data = 2 |> Jason.encode!()
 
       assert Bridge.process_data(data, [Double, Double, Double], context) ==
-               {:ok, %{data: "16", metadata: %{}}}
+        {:ok, %{data: "16", metadata: %{}}}
     end
 
     test "with happy path and metadata", %{context: context} do
       data = Jason.encode!(5)
 
       assert Bridge.process_data(data, [DoubleWithMetadata, Double, Double], context) ==
-               {:ok, %{data: "40", metadata: %{foo: 5}}}
+        {:ok, %{data: "40", metadata: %{foo: 5}}}
     end
 
     test "data not decodable", %{context: context} do
       data = "{2: AAAA}"
 
       assert {:error, %Jason.DecodeError{position: 1, token: nil, data: "{2: AAAA}"}} =
-               Bridge.process_data(data, [Double, Double], context)
+        Bridge.process_data(data, [Double, Double], context)
     end
 
     test "with failed path", %{context: context} do
       data = 2 |> Jason.encode!()
 
       assert Bridge.process_data(data, [Double, Fail, Double], context) ==
-               {:error, :service_error}
+        {:error, :service_error}
     end
 
     test "metadata get's merged", %{context: context} do
       data = Jason.encode!(5)
 
       assert Bridge.process_data(data, [Double, DoubleWithMetadata, Double], context) ==
-               {:ok, %{data: "40", metadata: %{foo: 10}}}
+        {:ok, %{data: "40", metadata: %{foo: 10}}}
 
       assert Bridge.process_data(data, [Double, Double, DoubleWithMetadata], context) ==
-               {:ok, %{data: "40", metadata: %{foo: 20}}}
+        {:ok, %{data: "40", metadata: %{foo: 20}}}
 
       assert Bridge.process_data(data, [Double, DoubleWithMetadata, TripleWithMetadata], context) ==
-               {:ok, %{data: "60", metadata: %{foo: 10, bar: 20}}}
+        {:ok, %{data: "60", metadata: %{foo: 10, bar: 20}}}
     end
 
     test "with mixed keys", %{context: context} do
       event = %{"foo" => "bar"} |> Jason.encode!()
 
       assert Bridge.process_data(event, [IdentityProcessor], context) ==
-               {:ok, %{data: event, metadata: %{stream_name: "foo"}}}
+        {:ok, %{data: event, metadata: %{stream_name: "foo"}}}
     end
   end
 
@@ -154,15 +150,65 @@ defmodule Satellite.BridgeTest do
         message = Bridge.handle_message(nil, message, context)
 
         assert message == %Broadway.Message{
-                 data: "{2: AAAA}",
-                 metadata: %{},
-                 acknowledger: nil,
-                 batcher: :default,
-                 batch_key: :default,
-                 batch_mode: :bulk,
-                 status: {:failed, %Jason.DecodeError{position: 1, token: nil, data: "{2: AAAA}"}}
-               }
+          data: "{2: AAAA}",
+          metadata: %{},
+          acknowledger: nil,
+          batcher: :default,
+          batch_key: :default,
+          batch_mode: :bulk,
+          status: {:failed, %Jason.DecodeError{position: 1, token: nil, data: "{2: AAAA}"}}
+        }
       end
+    end
+  end
+
+  describe "handle_batch/4" do
+    test "it sends messages to the sink" do
+      message1 = %Broadway.Message{
+        data: Jason.encode!(%{a: 1}),
+        metadata: %{},
+        acknowledger: nil,
+        batcher: :default,
+        batch_key: :default,
+        batch_mode: :bulk
+      }
+
+      message2 = %Broadway.Message{
+        data: Jason.encode!(%{a: 2}),
+        metadata: %{},
+        acknowledger: nil,
+        batcher: :default,
+        batch_key: :default,
+        batch_mode: :bulk
+      }
+
+      Bridge.handle_batch(nil, [message1, message2], nil, %{sink: %{module: NullSink, opts: %{pid: self()}}})
+
+      assert_received({:send, [^message1, ^message2]})
+    end
+
+    test "it skips any message with discard: true metadata" do
+      message1 = %Broadway.Message{
+        data: Jason.encode!(%{a: 1}),
+        metadata: %{discard: true},
+        acknowledger: nil,
+        batcher: :default,
+        batch_key: :default,
+        batch_mode: :bulk
+      }
+
+      message2 = %Broadway.Message{
+        data: Jason.encode!(%{a: 2}),
+        metadata: %{},
+        acknowledger: nil,
+        batcher: :default,
+        batch_key: :default,
+        batch_mode: :bulk
+      }
+
+      Bridge.handle_batch(nil, [message1, message2], nil, %{sink: %{module: NullSink, opts: %{pid: self()}}})
+
+      assert_received({:send, [^message2]})
     end
   end
 end

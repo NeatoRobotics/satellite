@@ -96,3 +96,16 @@ defmodule TestEchoConsumer do
     end
   end
 end
+
+defmodule NullSink do
+  def send(msgs, %{pid: pid}) do
+    Kernel.send(pid, {:send, msgs})
+
+    :ok
+  end
+  
+  def send(_msgs, _) do
+    :ok
+  end
+
+end
