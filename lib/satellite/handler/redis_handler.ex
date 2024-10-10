@@ -8,9 +8,9 @@ defmodule Satellite.Handler.Redis do
   # FIXME: Why is the option called :redix_process instead of :name?? How is this working at all?
   @impl true
   def send(%Event{type: type, origin: origin} = event, opts \\ [redix_process: redix_process()]) do
-    Logger.info("sending event to channel #{origin}:#{type}", event: event)
-
     channel = "#{origin}:#{type}"
+
+    Logger.info("sending event to channel #{channel}", event: event)
 
     publish(event, channel, opts)
   end
