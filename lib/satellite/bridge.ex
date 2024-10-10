@@ -13,6 +13,8 @@ defmodule Satellite.Bridge do
 
   require Logger
 
+  @avro_formats [:avro, :avro_plain]
+
   def start_link(
         sink: {sink, sink_opts},
         source: {source, source_opts},
@@ -28,11 +30,16 @@ defmodule Satellite.Bridge do
 
     avro_client = Application.get_env(:satellite, :avro_client)
 
-    if !avro_client and (sink_opts[:format] == :avro || source_opts[:format] == :avro),
-      do:
-        raise(ArgumentError, """
-        if `format` is avro for sink and/or source, an `avro_client` must be provided and instantiated.
-        """)
+    if !avro_client and
+         (sink_opts[:format] in @avro_formats || source_opts[:format] in @avro_formats),
+       do:
+         raise(ArgumentError, """
+         if `format` is avro for sink and/or source, an `avro_client` must be provided and instantiated.
+         """)
+
+    # if not specified, format is json by default
+    sink_opts = sink_opts |> Keyword.put_new(:format, :json)
+    source_opts = source_opts |> Keyword.put_new(:format, :json)
 
     Broadway.start_link(__MODULE__,
       name: __MODULE__,
@@ -184,11 +191,14 @@ defmodule Satellite.Bridge do
     Jason.decode(data)
   end
 
-  defp decode_data(data, %{avro_client: client, source: %{opts: %{format: :avro}}}) do
+  defp decode_data(data, %{avro_client: client, source: %{opts: %{format: format}}})
+       when format in @avro_formats do
     # FIXME: seems like ocf format wraps the event in a list, for some reason,
     # so we either unwrap it (and we are assuming ofc format here..)
     # or we figure out a cleaner and more clever way of guessing the schemas
-    # or we just go with plain format
+    # or we just go with plain format.
+    # For now, since we aren't actively using *incoming* Avro messages, I'll keep this as is for both avro & avro_plain.
+    # FIXME: This implies that we cannot correctly receive avro messages encoded WITHOUT a schema.
     client.decode(data)
     |> case do
       {:ok, [decoded_event]} ->
@@ -212,6 +222,16 @@ defmodule Satellite.Bridge do
          sink: %{opts: %{format: :avro}}
        }) do
     client.encode(data, schema_name: schema_name)
+    |> OK.map(fn encoded_data ->
+      %{data: encoded_data, metadata: metadata}
+    end)
+  end
+
+  defp encode_data(%{data: data, metadata: %{schema_name: schema_name} = metadata}, %{
+         avro_client: client,
+         sink: %{opts: %{format: :avro_plain}}
+       }) do
+    client.encode_plain(data, schema_name: schema_name)
     |> OK.map(fn encoded_data ->
       %{data: encoded_data, metadata: metadata}
     end)
